@@ -1,5 +1,6 @@
 # IntelliJ
 *.iml
+/.idea
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
@@ -10,6 +11,8 @@
 /.idea/gradle.xml
 /.idea/compiler.xml
 /.idea/misc.xml
+/.idea/deploymentTargetDropDown.xml
+.idea
 
 # Gradle files
 .gradle/

@@ -21,6 +21,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField(type = "String", name = "HH_ACCESS_TOKEN", value = "\"${developProperties.hhAccessToken}\"")
+        buildConfigField(
+            type = "String",
+            name = "DEVELOPER_EMAIL",
+            value = "\"${developProperties.developerEmailHhApi}\""
+        )
     }
 
     buildTypes {
@@ -57,6 +62,7 @@ dependencies {
     annotationProcessor(libs.glide.compiler)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.logging.interceptor)
     implementation(libs.koin.android)
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)

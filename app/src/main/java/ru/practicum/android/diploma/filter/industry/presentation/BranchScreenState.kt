@@ -10,4 +10,5 @@ sealed class BranchScreenState {
     ) : BranchScreenState()
 
     data object Error : BranchScreenState()
+    data object Empty : BranchScreenState()
 }

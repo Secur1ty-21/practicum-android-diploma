@@ -4,13 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.practicum.android.diploma.core.domain.model.Country
-import ru.practicum.android.diploma.filter.area.domain.model.Area
 import ru.practicum.android.diploma.filter.domain.models.FilterType
 import ru.practicum.android.diploma.filter.domain.usecase.ApplyFilterUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.DeleteFiltersUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.GetFiltersUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.SaveFiltersUseCase
 import ru.practicum.android.diploma.filter.industry.domain.model.Industry
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 
 class FilterViewModel(
     private val getFiltersUseCase: GetFiltersUseCase,

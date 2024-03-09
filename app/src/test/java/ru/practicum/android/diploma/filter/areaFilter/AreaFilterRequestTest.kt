@@ -6,9 +6,9 @@ import org.junit.Test
 import ru.practicum.android.diploma.core.data.network.ConnectionChecker
 import ru.practicum.android.diploma.core.data.network.HhApiRetrofitBuilder
 import ru.practicum.android.diploma.core.data.network.RetrofitNetworkClient
-import ru.practicum.android.diploma.filter.area.data.AreaRepositoryImpl
-import ru.practicum.android.diploma.filter.area.domain.model.AreaError
-import ru.practicum.android.diploma.filter.area.domain.usecase.GetAreasByTextUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.data.AreaRepositoryImpl
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
 import ru.practicum.android.diploma.util.Result
 
 class AreaFilterRequestTest {

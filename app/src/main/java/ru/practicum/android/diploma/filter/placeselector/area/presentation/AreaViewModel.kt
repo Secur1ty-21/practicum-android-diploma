@@ -1,4 +1,4 @@
-package ru.practicum.android.diploma.filter.area.presentation
+package ru.practicum.android.diploma.filter.placeselector.area.presentation
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,16 +8,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
-import ru.practicum.android.diploma.filter.area.domain.model.Area
-import ru.practicum.android.diploma.filter.area.domain.model.AreaError
-import ru.practicum.android.diploma.filter.area.domain.usecase.GetAreasByTextUseCase
-import ru.practicum.android.diploma.filter.area.domain.usecase.SaveAreaUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
 import ru.practicum.android.diploma.util.Result
 
-class AreaViewModel(
-    private val areaUseCase: GetAreasByTextUseCase,
-    private val saveAreaUseCase: SaveAreaUseCase
-) : ViewModel() {
+class AreaViewModel(private val areaUseCase: GetAreasByTextUseCase) : ViewModel() {
     private val stateLiveData = MutableLiveData<AreaScreenState>()
     private var isClickAllowed = true
     private val areas: ArrayList<Area> = arrayListOf()
@@ -26,18 +22,18 @@ class AreaViewModel(
 
     fun getAreas(searchText: String, countryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            areaUseCase.execute(searchText, countryId).collect {
-                if (it is Result.Success) {
-                    if (it.data.isEmpty()) {
+            areaUseCase.execute(searchText, countryId).collect { result ->
+                if (result is Result.Success) {
+                    if (result.data.isEmpty()) {
                         renderState(AreaScreenState.EmptyError)
                     } else {
                         areas.clear()
-                        areas.addAll(it.data)
+                        areas.addAll(result.data)
                         areas.sortBy { it.name }
                         renderState(AreaScreenState.Content(areas))
                     }
                 } else {
-                    if ((it as Result.Error).errorType is AreaError.GetError) {
+                    if ((result as Result.Error).errorType is AreaError.GetError) {
                         renderState(AreaScreenState.GetError)
                     } else {
                         renderState(AreaScreenState.EmptyError)
@@ -51,10 +47,6 @@ class AreaViewModel(
         stateLiveData.postValue(areaScreenState)
     }
 
-    fun saveArea(area: Area) {
-        saveAreaUseCase.execute(area = area)
-    }
-
     fun clickDebounce(): Boolean {
         val current = isClickAllowed
         if (isClickAllowed) {
@@ -66,5 +58,4 @@ class AreaViewModel(
         }
         return current
     }
-
 }

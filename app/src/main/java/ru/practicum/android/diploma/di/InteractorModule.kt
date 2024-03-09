@@ -5,14 +5,14 @@ import ru.practicum.android.diploma.favourites.domain.api.AddToFavouritesInterac
 import ru.practicum.android.diploma.favourites.domain.api.GetFavouritesInteractor
 import ru.practicum.android.diploma.favourites.domain.impl.AddToFavouritestInteractorImpl
 import ru.practicum.android.diploma.favourites.domain.impl.GetFavourtiesInteractorImpl
-import ru.practicum.android.diploma.filter.area.domain.usecase.GetAreaFilterUseCase
-import ru.practicum.android.diploma.filter.area.domain.usecase.GetAreasByTextUseCase
-import ru.practicum.android.diploma.filter.area.domain.usecase.SaveAreaUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.ApplyFilterUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.DeleteFiltersUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.GetApplyFilterFlagUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.GetFiltersUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.SaveFiltersUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreaFilterUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.SaveAreaUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountriesUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountryFilterUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.SaveCountryFilterUseCase

@@ -10,13 +10,11 @@ import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.core.domain.model.Country
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountriesUseCase
-import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.SaveCountryFilterUseCase
 import ru.practicum.android.diploma.util.Resource
 import ru.practicum.android.diploma.util.StringUtils
 
 class CountryViewModel(
-    private val countryUseCase: GetCountriesUseCase,
-    private val saveCountryFilterUseCase: SaveCountryFilterUseCase
+    private val countryUseCase: GetCountriesUseCase
 ) : ViewModel() {
     private val stateLiveData = MutableLiveData<CountryScreenState>()
     private var isClickAllowed = true
@@ -63,9 +61,5 @@ class CountryViewModel(
             }
         }
         return current
-    }
-
-    fun saveCountry(country: Country) {
-        saveCountryFilterUseCase.execute(country)
     }
 }

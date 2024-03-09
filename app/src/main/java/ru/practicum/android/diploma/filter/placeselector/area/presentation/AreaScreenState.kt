@@ -1,6 +1,6 @@
-package ru.practicum.android.diploma.filter.area.presentation
+package ru.practicum.android.diploma.filter.placeselector.area.presentation
 
-import ru.practicum.android.diploma.filter.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 
 sealed class AreaScreenState {
     class Content(val areas: ArrayList<Area>) : AreaScreenState()

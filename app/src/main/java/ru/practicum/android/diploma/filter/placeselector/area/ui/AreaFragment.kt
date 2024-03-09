@@ -1,4 +1,4 @@
-package ru.practicum.android.diploma.filter.area.ui
+package ru.practicum.android.diploma.filter.placeselector.area.ui
 
 import android.content.Context
 import android.os.Bundle
@@ -7,29 +7,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.core.os.bundleOf
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentRegionBinding
-import ru.practicum.android.diploma.filter.area.domain.model.Area
-import ru.practicum.android.diploma.filter.area.presentation.AreaScreenState
-import ru.practicum.android.diploma.filter.area.presentation.AreaViewModel
+import ru.practicum.android.diploma.filter.placeselector.PlaceSelectorFragment
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.presentation.AreaScreenState
+import ru.practicum.android.diploma.filter.placeselector.area.presentation.AreaViewModel
 
-class RegionFragment : Fragment() {
-
+class AreaFragment : Fragment() {
     private var _binding: FragmentRegionBinding? = null
     private val binding get() = _binding!!
     private val viewModel by viewModel<AreaViewModel>()
-
     private var areaAdapter: AreaAdapter = AreaAdapter { area ->
         transitionToPlaceSelector(area)
     }
-
     private var countryId = ""
-    private var countryName = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,21 +44,14 @@ class RegionFragment : Fragment() {
         binding.filterToolbarRegion.setNavigationOnClickListener {
             findNavController().popBackStack()
         }
-
-        countryId = RegionFragmentArgs.fromBundle(requireArguments()).countryId
-        countryName = RegionFragmentArgs.fromBundle(requireArguments()).countryName
-
+        countryId = AreaFragmentArgs.fromBundle(requireArguments()).countryId
         viewModel.getAreas("", countryId)
-
         viewModel.observeState().observe(viewLifecycleOwner) {
             render(it)
         }
-
         binding.regionRecycler.adapter = areaAdapter
         binding.regionRecycler.layoutManager = LinearLayoutManager(requireContext())
-
         setupListeners()
-
     }
 
     private fun render(areaScreenState: AreaScreenState) {
@@ -94,7 +86,13 @@ class RegionFragment : Fragment() {
 
     private fun transitionToPlaceSelector(area: Area) {
         if (viewModel.clickDebounce()) {
-            viewModel.saveArea(area)
+            setFragmentResult(
+                requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
+                result = bundleOf(
+                    PlaceSelectorFragment.AREA_ID_KEY to area.id,
+                    PlaceSelectorFragment.AREA_NAME_KEY to area.name
+                )
+            )
             findNavController().popBackStack()
         }
     }

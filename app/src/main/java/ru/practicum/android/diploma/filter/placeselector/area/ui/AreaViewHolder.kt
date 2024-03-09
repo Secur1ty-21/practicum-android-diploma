@@ -1,10 +1,10 @@
-package ru.practicum.android.diploma.filter.area.ui
+package ru.practicum.android.diploma.filter.placeselector.area.ui
 
 import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import ru.practicum.android.diploma.R
-import ru.practicum.android.diploma.filter.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 
 class AreaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val name: TextView = itemView.findViewById(R.id.tvCountryOrRegion)

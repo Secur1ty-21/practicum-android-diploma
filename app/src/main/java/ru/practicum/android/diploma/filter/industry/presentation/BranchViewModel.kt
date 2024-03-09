@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.industry.domain.model.Industry
+import ru.practicum.android.diploma.filter.industry.domain.model.IndustryError
 import ru.practicum.android.diploma.filter.industry.domain.usecase.GetIndustriesByTextUseCase
 import ru.practicum.android.diploma.filter.industry.domain.usecase.SaveIndustryUseCase
 import ru.practicum.android.diploma.util.Result
@@ -42,7 +43,13 @@ class BranchViewModel(
                         )
                     }
 
-                    is Result.Error -> renderState(BranchScreenState.Error)
+                    is Result.Error -> {
+                        if (it.errorType is IndustryError.NotFound) {
+                            renderState(BranchScreenState.Empty)
+                        } else {
+                            renderState(BranchScreenState.Error)
+                        }
+                    }
                 }
             }
         }

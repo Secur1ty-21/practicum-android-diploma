@@ -22,13 +22,7 @@ class BranchAdapter(
             industry = branches[position].first,
             isSelected = branches[position].second
         ) {
-            clickListener.onClick(it, position)
-        }
-    }
-
-    fun setSelected(index: Int) {
-        if (branches.size > index) {
-            branches[index] = branches[index].copy(second = true)
+            clickListener.onClick(it)
         }
     }
 
@@ -36,5 +30,5 @@ class BranchAdapter(
 }
 
 fun interface IndustryItemClickLister {
-    fun onClick(branch: Industry, position: Int)
+    fun onClick(branch: Industry)
 }

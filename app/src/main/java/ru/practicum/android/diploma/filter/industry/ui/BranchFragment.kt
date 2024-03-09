@@ -26,11 +26,10 @@ class BranchFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel by viewModel<BranchViewModel>()
-    private var branchAdapter: BranchAdapter = BranchAdapter { industry, index ->
-        viewModel.onSelectIndustryEvent(industry, index)
+    private var branchAdapter: BranchAdapter = BranchAdapter { industry ->
+        viewModel.onSelectIndustryEvent(industry)
     }
     private var selectedIndustry: Industry? = null
-    private var selectedIndex: Int? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,17 +86,20 @@ class BranchFragment : Fragment() {
 
     private fun showContent(content: BranchScreenState.Content) {
         val newIndustries = content.branches.map { it to false }.toMutableList()
-        if (content.selectedIndex != null && content.selectedIndustry != null) {
-            for (i in content.branches.indices) {
-                if (selectedIndustry?.id == content.branches[i].id) {
-                    selectedIndex = i
+        if (content.selectedIndustry != null) {
+            for (i in newIndustries.indices) {
+                if (selectedIndustry?.id == newIndustries[i].first.id) {
                     newIndustries[i] = newIndustries[i].copy(second = false)
                     break
                 }
             }
-            newIndustries[content.selectedIndex] = newIndustries[content.selectedIndex].copy(second = true)
+            for (i in newIndustries.indices) {
+                if (content.selectedIndustry.id == newIndustries[i].first.id) {
+                    newIndustries[i] = newIndustries[i].copy(second = true)
+                    break
+                }
+            }
             selectedIndustry = content.selectedIndustry
-            selectedIndex = content.selectedIndex
             binding.btnSave.isVisible = true
         } else {
             binding.btnSave.isVisible = false

@@ -7,6 +7,7 @@
         <item name="colorPrimaryContainer">@color/yp_light_gray</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:statusBarColor">@color/yp_white</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <!-- Custom attribute setup -->
         <item name="teamTextColor">@color/yp_black</item>
         <item name="bottomNavViewBackgroundColor">@color/yp_white</item>

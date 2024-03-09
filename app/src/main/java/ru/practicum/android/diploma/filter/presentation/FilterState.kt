@@ -8,6 +8,6 @@ data class FilterState(
     val country: Country? = null,
     val area: Area? = null,
     val industry: Industry? = null,
-    val salary: Int? = null,
+    val salary: String? = null,
     val isNotShowWithoutSalary: Boolean = false
 )

@@ -26,12 +26,7 @@ class RetrofitNetworkClient(
         page: Int,
         perPage: Int
     ): Response {
-        if (!connectionChecker.isConnected()) {
-            return Response().apply { resultCode = NETWORK_ERROR_CODE }
-        }
-        return withContext(Dispatchers.IO) {
-            executeRequestGetVacanciesByPage(searchText, filterParameters, page, perPage, hhApi)
-        }
+        return executeRequestGetVacanciesByPage(searchText, filterParameters, page, perPage, hhApi)
     }
 
     private suspend fun executeRequestGetVacanciesByPage(
@@ -47,8 +42,7 @@ class RetrofitNetworkClient(
             HhApiQuery.SEARCH_TEXT.value to searchText
         )
         queryMap.putAll(getQueryFilterMap(filterParameters))
-        val response = hhApi.getVacancies(queryMap)
-        return getResponse(response)
+        return runRequestOnIoThreads { hhApi.getVacancies(queryMap) }
     }
 
     private fun getQueryFilterMap(filterParameters: SearchFilterParameters): Map<String, String> {
@@ -69,47 +63,55 @@ class RetrofitNetworkClient(
     }
 
     override suspend fun getDetailVacancyById(id: Long): Response {
-        if (!connectionChecker.isConnected()) {
-            return Response().apply { resultCode = NETWORK_ERROR_CODE }
-        }
-        return withContext(Dispatchers.IO) {
-            val response = hhApi.getVacancy(id)
-            getResponse(response)
-        }
+        return runRequestOnIoThreads { hhApi.getVacancy(id) }
     }
 
     override suspend fun getCountries(): Response {
-        val retrofitResponse = hhApi.getCountries()
-        val response = if (retrofitResponse.isSuccessful) {
-            retrofit2.Response.success(CountryResponse(retrofitResponse.body() ?: emptyList()))
-        } else {
-            retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getCountries()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(CountryResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+            }
         }
-        return getResponse(response)
     }
 
     override suspend fun getIndustries(): Response {
-        val retrofitResponse = hhApi.getIndustries()
-        val response = if (retrofitResponse.isSuccessful) {
-            retrofit2.Response.success(GetIndustriesResponse(retrofitResponse.body() ?: emptyList()))
-        } else {
-            retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getIndustries()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(GetIndustriesResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+            }
         }
-        return getResponse(response)
     }
 
     override suspend fun getAreas(): Response {
-        val retrofitResponse = hhApi.getAreas()
-        val response = if (retrofitResponse.isSuccessful) {
-            retrofit2.Response.success(GetAreasResponse(retrofitResponse.body() ?: emptyList()))
-        } else {
-            retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getAreas()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(GetAreasResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+            }
         }
-        return getResponse(response)
     }
 
-    private fun <T : Response> getResponse(retrofitResponse: retrofit2.Response<T>): Response {
+    private suspend fun <T : Response> runRequestOnIoThreads(request: suspend () -> retrofit2.Response<T>): Response {
+        return withContext(Dispatchers.IO) {
+            if (!connectionChecker.isConnected()) {
+                Response().apply { resultCode = NETWORK_ERROR_CODE }
+            } else {
+                getResponse { request() }
+            }
+        }
+    }
+
+    private suspend fun <T : Response> getResponse(request: suspend () -> retrofit2.Response<T>): Response {
         return try {
+            val retrofitResponse = request()
             val body = retrofitResponse.body()
             if (retrofitResponse.isSuccessful && body != null) {
                 body.apply { resultCode = SUCCESSFUL_CODE }

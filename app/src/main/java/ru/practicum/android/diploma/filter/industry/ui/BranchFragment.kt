@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -21,7 +22,6 @@ import ru.practicum.android.diploma.filter.industry.presentation.BranchScreenSta
 import ru.practicum.android.diploma.filter.industry.presentation.BranchViewModel
 
 class BranchFragment : Fragment() {
-
     private var _binding: FragmentBranchBinding? = null
     private val binding get() = _binding!!
 
@@ -56,14 +56,33 @@ class BranchFragment : Fragment() {
 
     private fun render(branchScreenState: BranchScreenState) {
         when (branchScreenState) {
-            is BranchScreenState.Error -> showError()
-            is BranchScreenState.Content -> showContent(branchScreenState)
+            is BranchScreenState.Error -> {
+                binding.errorPlaceholder.setImageDrawable(
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.placeholder_region_response_error)
+                )
+                binding.placeholderText.text = getString(R.string.placeholder_cannot_get_list_of_regions)
+                showError()
+            }
+            is BranchScreenState.Content -> {
+                binding.errorPlaceholder.isVisible = false
+                binding.placeholderText.isVisible = false
+                showContent(branchScreenState)
+            }
+            is BranchScreenState.Empty -> {
+                binding.errorPlaceholder.setImageDrawable(
+                    AppCompatResources.getDrawable(requireContext(), R.drawable.placeholder_nothing_found)
+                )
+                binding.placeholderText.text = getString(R.string.placeholder_no_such_industry)
+                showError()
+            }
         }
     }
 
     private fun showError() {
         binding.branchRecycler.isVisible = false
         binding.btnSave.isVisible = false
+        binding.errorPlaceholder.isVisible = true
+        binding.placeholderText.isVisible = true
     }
 
     private fun showContent(content: BranchScreenState.Content) {
@@ -93,7 +112,6 @@ class BranchFragment : Fragment() {
         binding.filterToolbarBranch.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-
         binding.btnSave.setOnClickListener {
             if (viewModel.clickDebounce()) {
                 selectedIndustry?.let { industry ->
@@ -102,7 +120,6 @@ class BranchFragment : Fragment() {
                 findNavController().popBackStack()
             }
         }
-
         binding.search.doOnTextChanged { text, _, _, _ ->
             viewModel.getBranches(binding.search.text.toString(), selectedIndustry)
             if (text.isNullOrEmpty()) {
@@ -111,7 +128,6 @@ class BranchFragment : Fragment() {
                 binding.btnClear.setImageResource(R.drawable.ic_close)
             }
         }
-
         binding.btnClear.setOnClickListener {
             binding.search.text = null
         }

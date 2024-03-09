@@ -8,6 +8,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
@@ -34,6 +35,16 @@ class PlaceSelectorFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.state.observe(viewLifecycleOwner) {
+            it.country?.let { country -> countryId = country.id }
+            binding.countryText.setText(it.country?.name ?: "")
+            binding.regionText.setText(it.area?.name ?: "")
+            if (it.area?.name.isNullOrEmpty() && it.country?.name.isNullOrEmpty()) {
+                binding.selectButton.visibility = View.GONE
+            } else {
+                binding.selectButton.visibility = View.VISIBLE
+            }
+        }
         getData()
         initUi()
         initListeners()
@@ -56,16 +67,18 @@ class PlaceSelectorFragment : Fragment() {
     }
 
     private fun getData() {
-        viewModel.state.observe(viewLifecycleOwner) {
-            it.country?.let { country ->
-                countryId = country.id
+        setFragmentResultListener(PLACE_SELECTOR_KEY) { _, bundle ->
+            if (bundle.containsKey(COUNTRY_ID_KEY) && bundle.containsKey(COUNTRY_NAME_KEY)) {
+                viewModel.onCountryFragmentResultEvent(
+                    countryId = bundle.getString(COUNTRY_ID_KEY, ""),
+                    countryName = bundle.getString(COUNTRY_NAME_KEY, "")
+                )
             }
-            binding.countryText.setText(it.country?.name ?: "")
-            binding.regionText.setText(it.area?.name ?: "")
-            if (it.area?.name.isNullOrEmpty() && it.country?.name.isNullOrEmpty()) {
-                binding.selectButton.visibility = View.GONE
-            } else {
-                binding.selectButton.visibility = View.VISIBLE
+            if (bundle.containsKey(AREA_ID_KEY) && bundle.containsKey(AREA_NAME_KEY)) {
+                viewModel.onAreaFragmentResultEvent(
+                    areaId = bundle.getString(AREA_ID_KEY, ""),
+                    areaName = bundle.getString(AREA_NAME_KEY, "")
+                )
             }
         }
         viewModel.init()
@@ -93,9 +106,22 @@ class PlaceSelectorFragment : Fragment() {
                 view.setImageResource(R.drawable.ic_close)
                 view.setOnClickListener {
                     editText.setText("")
+                    if (it.id == binding.countryIcon.id) {
+                        viewModel.onBtnClearCountryClickEvent()
+                    } else if (it.id == binding.regionIcon.id) {
+                        viewModel.onBtnClearAreaClickEvent()
+                    }
                     changeIcon(editText, view)
                 }
             }
         }
+    }
+
+    companion object {
+        const val PLACE_SELECTOR_KEY = "PLACE_SELECTOR_KEY"
+        const val COUNTRY_ID_KEY = "COUNTRY_ID_KEY"
+        const val COUNTRY_NAME_KEY = "COUNTRY_NAME_KEY"
+        const val AREA_ID_KEY = "AREA_ID_KEY"
+        const val AREA_NAME_KEY = "AREA_NAME_KEY"
     }
 }

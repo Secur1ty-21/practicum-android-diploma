@@ -56,6 +56,26 @@
         tools:itemCount="20"
         tools:listitem="@layout/industry_item" />
 
+    <ImageView
+        android:id="@+id/errorPlaceholder"
+        android:layout_width="328dp"
+        android:layout_height="223dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="143dp"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        tools:src="@drawable/placeholder_region_response_error" />
+
+    <TextView
+        android:id="@+id/placeholderText"
+        style="@style/ErrorTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="top"
+        android:visibility="gone"
+        tools:text="@string/placeholder_no_such_region" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSave"
         android:layout_width="match_parent"

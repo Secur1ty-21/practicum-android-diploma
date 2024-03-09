@@ -4,10 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import ru.practicum.android.diploma.core.domain.model.Country
-import ru.practicum.android.diploma.filter.area.domain.model.Area
-import ru.practicum.android.diploma.filter.area.domain.usecase.SaveAreaUseCase
 import ru.practicum.android.diploma.filter.domain.models.FilterType
 import ru.practicum.android.diploma.filter.domain.usecase.GetFiltersUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.SaveAreaUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.SaveCountryFilterUseCase
 import ru.practicum.android.diploma.filter.placeselector.model.PlaceSelectorState
 
@@ -37,7 +37,25 @@ class PlaceSelectorViewModel(
         if (currCountry != null && currCountry.id != country?.id) {
             area = null
         }
-        _state.postValue(PlaceSelectorState(country, area))
+        if (country != null || area != null) {
+            _state.postValue(PlaceSelectorState(country, area))
+        }
+    }
+
+    fun onCountryFragmentResultEvent(countryId: String, countryName: String) {
+        _state.value?.let {
+            if (countryId != it.country?.id) {
+                _state.postValue(it.copy(country = Country(countryId, countryName), area = null))
+            } else {
+                _state.postValue(it.copy(country = Country(countryId, countryName)))
+            }
+        }
+    }
+
+    fun onAreaFragmentResultEvent(areaId: String, areaName: String) {
+        _state.value?.let {
+            _state.postValue(it.copy(area = Area(areaId, areaName, null)))
+        }
     }
 
     fun onBtnSelectClickEvent() {
@@ -48,6 +66,22 @@ class PlaceSelectorViewModel(
         }
         if (currArea != null) {
             saveAreaUseCase.execute(currArea)
+        }
+    }
+
+    fun onBtnClearAreaClickEvent() {
+        _state.value?.let { state ->
+            state.area?.let {
+                _state.postValue(state.copy(area = null))
+            }
+        }
+    }
+
+    fun onBtnClearCountryClickEvent() {
+        _state.value?.let { state ->
+            state.country?.let {
+                _state.postValue(state.copy(country = null, area = null))
+            }
         }
     }
 }

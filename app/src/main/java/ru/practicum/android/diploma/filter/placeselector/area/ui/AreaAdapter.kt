@@ -1,10 +1,10 @@
-package ru.practicum.android.diploma.filter.area.ui
+package ru.practicum.android.diploma.filter.placeselector.area.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import ru.practicum.android.diploma.R
-import ru.practicum.android.diploma.filter.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 
 class AreaAdapter(private val clickListener: (area: Area) -> Unit) :
     RecyclerView.Adapter<AreaViewHolder>() {

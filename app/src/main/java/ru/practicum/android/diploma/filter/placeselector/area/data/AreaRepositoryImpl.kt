@@ -1,4 +1,4 @@
-package ru.practicum.android.diploma.filter.area.data
+package ru.practicum.android.diploma.filter.placeselector.area.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -6,9 +6,9 @@ import ru.practicum.android.diploma.core.data.NetworkClient
 import ru.practicum.android.diploma.core.data.mapper.mapToDomain
 import ru.practicum.android.diploma.core.data.network.dto.AreasDto
 import ru.practicum.android.diploma.core.data.network.dto.GetAreasResponse
-import ru.practicum.android.diploma.filter.area.domain.api.AreaRepository
-import ru.practicum.android.diploma.filter.area.domain.model.Area
-import ru.practicum.android.diploma.filter.area.domain.model.AreaError
+import ru.practicum.android.diploma.filter.placeselector.area.domain.api.AreaRepository
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
 import ru.practicum.android.diploma.util.Result
 
 class AreaRepositoryImpl(

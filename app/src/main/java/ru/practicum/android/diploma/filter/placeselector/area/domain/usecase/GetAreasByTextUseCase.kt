@@ -1,8 +1,8 @@
-package ru.practicum.android.diploma.filter.area.domain.usecase
+package ru.practicum.android.diploma.filter.placeselector.area.domain.usecase
 
 import kotlinx.coroutines.flow.map
-import ru.practicum.android.diploma.filter.area.domain.api.AreaRepository
-import ru.practicum.android.diploma.filter.area.domain.model.AreaError
+import ru.practicum.android.diploma.filter.placeselector.area.domain.api.AreaRepository
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
 import ru.practicum.android.diploma.util.Result
 
 class GetAreasByTextUseCase(

@@ -7,9 +7,9 @@ import ru.practicum.android.diploma.core.data.mapper.VacancyMapper
 import ru.practicum.android.diploma.core.data.network.dto.CountryResponse
 import ru.practicum.android.diploma.core.data.storage.sharedpreferences.FilterStorage
 import ru.practicum.android.diploma.core.domain.model.Country
-import ru.practicum.android.diploma.filter.area.domain.model.Area
 import ru.practicum.android.diploma.filter.domain.api.FilterRepository
 import ru.practicum.android.diploma.filter.domain.models.FilterType
+import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 import ru.practicum.android.diploma.util.Resource
 
 class FilterRepositoryImpl(
@@ -81,6 +81,10 @@ class FilterRepositoryImpl(
 
     override fun deleteFilters() {
         filterStorage.clearFilters()
+    }
+
+    override fun deleteFilter(filterType: FilterType) {
+        filterStorage.deleteFilter(filterType)
     }
 
     override fun setFilterApplied(isApplied: Boolean) {

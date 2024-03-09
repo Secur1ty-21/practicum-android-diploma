@@ -47,7 +47,7 @@ class SearchViewModel(
         return current
     }
 
-    fun searchByButton(searchText: String, filterParameters: SearchFilterParameters) {
+    fun searchByButton(searchText: String) {
         if (searchText.isNotEmpty()) {
             searchByTextJob?.cancel()
             viewModelScope.launch(Dispatchers.IO) {
@@ -92,7 +92,7 @@ class SearchViewModel(
         return parameters
     }
 
-    fun searchByText(searchText: String, filterParameters: SearchFilterParameters) {
+    fun searchByText(searchText: String) {
         searchByTextJob?.cancel()
         if (searchText.isNotEmpty() && searchText != previousSearchText) {
             searchByTextJob = viewModelScope.launch(Dispatchers.IO) {
@@ -134,11 +134,11 @@ class SearchViewModel(
         }
     }
 
-    fun searchByPage(searchText: String, page: Int, filterParameters: SearchFilterParameters) {
+    fun searchByPage(searchText: String, page: Int) {
         if (isSearchByPageAllowed(searchText, page)) {
             isSearchByPageAllowed = false
             viewModelScope.launch(Dispatchers.IO) {
-                searchVacancyUseCase.execute(searchText, page, filterParameters).collect {
+                searchVacancyUseCase.execute(searchText, page, getFilterParameters()).collect {
                     processSearchByPageResult(it, page)
                     delay(SEARCH_PAGINATION_DELAY)
                     isSearchByPageAllowed = true
@@ -175,6 +175,14 @@ class SearchViewModel(
 
     fun clearSearch() {
         stateLiveData.postValue(SearchState.Default)
+    }
+
+    fun isFilterApplied(): Boolean {
+        val filterParameters = getFilterParameters()
+        return (filterParameters.regionId.isNotEmpty()
+            || filterParameters.industriesId.isNotEmpty()
+            || filterParameters.salary.isNotEmpty()
+            || filterParameters.isOnlyWithSalary)
     }
 
     companion object {

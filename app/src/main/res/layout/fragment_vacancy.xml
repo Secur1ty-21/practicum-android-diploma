@@ -358,6 +358,7 @@
                 android:text="@string/bar_similar_vacancy"
                 android:textAllCaps="false"
                 android:textColor="@color/yp_white"
+                android:letterSpacing="0"
                 android:textSize="@dimen/tv_button_size"
                 app:cornerRadius="12dp"
                 app:layout_constraintEnd_toEndOf="@id/right_border_16"

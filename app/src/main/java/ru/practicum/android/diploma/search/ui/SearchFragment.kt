@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
-import ru.practicum.android.diploma.core.domain.model.SearchFilterParameters
 import ru.practicum.android.diploma.core.domain.model.SearchVacanciesResult
 import ru.practicum.android.diploma.core.domain.model.ShortVacancy
 import ru.practicum.android.diploma.databinding.FragmentSearchBinding
@@ -25,7 +24,6 @@ import ru.practicum.android.diploma.search.presentation.SearchStatus
 import ru.practicum.android.diploma.search.presentation.SearchViewModel
 
 class SearchFragment : Fragment() {
-    private val mockedParameters = SearchFilterParameters()
     private val viewModel by viewModel<SearchViewModel>()
     private var vacancyAdapter: VacancyAdapter = VacancyAdapter { vacancy ->
         transitionToDetailedVacancy(vacancy.id)
@@ -51,11 +49,12 @@ class SearchFragment : Fragment() {
             render(it)
         }
         setupListeners()
+        renderFilterStatus()
     }
 
     private fun setupListeners() {
         binding.searchEditText.doOnTextChanged { text, _, _, _ ->
-            viewModel.searchByText(binding.searchEditText.text.toString(), mockedParameters)
+            viewModel.searchByText(binding.searchEditText.text.toString())
             if (text.isNullOrEmpty()) {
                 binding.icSearchOrCross.setImageResource(R.drawable.ic_search)
             } else {
@@ -68,7 +67,7 @@ class SearchFragment : Fragment() {
         }
         binding.searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                viewModel.searchByButton(binding.searchEditText.text.toString(), mockedParameters)
+                viewModel.searchByButton(binding.searchEditText.text.toString())
                 val inputMethodManager =
                     requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                 inputMethodManager?.hideSoftInputFromWindow(binding.searchEditText.windowToken, 0)
@@ -105,7 +104,6 @@ class SearchFragment : Fragment() {
                     viewModel.searchByPage(
                         searchText = binding.searchEditText.text.toString(),
                         page = getNextPageIndex(),
-                        filterParameters = mockedParameters
                     )
                 } else if (currentLastVisibleItem != lastVisibleItem) {
                     binding.paginationProgressBar.visibility = View.GONE
@@ -131,12 +129,6 @@ class SearchFragment : Fragment() {
 
     private fun isScrolledToLastItem(lastVisibleItem: Int): Boolean {
         return lastVisibleItem + 1 >= vacancyAdapter.itemCount
-    }
-
-    private fun search() {
-        if (binding.searchEditText.text.isNotEmpty()) {
-            viewModel.searchByText(binding.searchEditText.text.toString(), mockedParameters)
-        }
     }
 
     private fun render(it: SearchState) {
@@ -261,6 +253,14 @@ class SearchFragment : Fragment() {
                 binding.errorPlaceholder.visibility = View.GONE
                 binding.tvVacancyAmount.visibility = View.GONE
             }
+        }
+    }
+
+    private fun renderFilterStatus() {
+        if (viewModel.isFilterApplied()) {
+            binding.searchToolbar.menu.findItem(R.id.menu_logo).setIcon(R.drawable.ic_filter_on)
+        } else {
+            binding.searchToolbar.menu.findItem(R.id.menu_logo).setIcon(R.drawable.ic_filter)
         }
     }
 

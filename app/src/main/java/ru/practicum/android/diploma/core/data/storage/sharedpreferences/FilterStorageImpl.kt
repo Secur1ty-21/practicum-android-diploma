@@ -25,7 +25,7 @@ class FilterStorageImpl(private val sharedPreferences: SharedPreferences) : Filt
                     }
 
                     is FilterType.Salary -> {
-                        putInt(SALARY_AMOUNT_KEY, filter.amount)
+                        putString(SALARY_AMOUNT_KEY, filter.amount)
                     }
 
                     is FilterType.ShowWithSalaryFlag -> {
@@ -81,8 +81,8 @@ class FilterStorageImpl(private val sharedPreferences: SharedPreferences) : Filt
 
     private fun addSalaryFilter(filters: MutableList<FilterType>) {
         sharedPreferences.apply {
-            val salaryAmount = getInt(SALARY_AMOUNT_KEY, 0)
-            if (salaryAmount != 0) {
+            val salaryAmount = getString(SALARY_AMOUNT_KEY, "")
+            if (!salaryAmount.isNullOrEmpty()) {
                 filters.add(FilterType.Salary(salaryAmount))
             }
         }

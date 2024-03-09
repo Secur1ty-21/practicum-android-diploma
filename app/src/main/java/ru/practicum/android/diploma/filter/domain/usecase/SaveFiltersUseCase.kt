@@ -18,9 +18,9 @@ class SaveFiltersUseCase(
                 FilterType.Region(it.id, it.name)
             )
         }
-        filterState.salary?.let {
+        filterState.salary?.let { salary ->
             filterRepository.saveFilterToLocalStorage(
-                FilterType.Salary(it)
+                FilterType.Salary(salary)
             )
         }
         filterState.industry?.let {
@@ -29,5 +29,9 @@ class SaveFiltersUseCase(
             )
         }
         filterRepository.saveFilterToLocalStorage(FilterType.ShowWithSalaryFlag(filterState.isNotShowWithoutSalary))
+    }
+
+    fun execute(filterType: FilterType) {
+        filterRepository.saveFilterToLocalStorage(filterType)
     }
 }

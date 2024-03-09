@@ -51,9 +51,17 @@ class FilterViewModel(
 
     fun onBtnSaveClickEvent(salary: String, isChecked: Boolean) {
         state.value?.let {
-            saveFilterUseCase.execute(it.copy(salary = salary.toIntOrNull(), isNotShowWithoutSalary = isChecked))
+            saveFilterUseCase.execute(it.copy(salary = salary, isNotShowWithoutSalary = isChecked))
             applyFilterUseCase.execute()
         }
+    }
+
+    fun onInputSalaryEvent(salary: String) {
+        saveFilterUseCase.execute(FilterType.Salary(salary))
+    }
+
+    fun onCheckChangeEvent(isChecked: Boolean) {
+        saveFilterUseCase.execute(FilterType.ShowWithSalaryFlag(isChecked))
     }
 
     fun onBtnResetClickEvent() {

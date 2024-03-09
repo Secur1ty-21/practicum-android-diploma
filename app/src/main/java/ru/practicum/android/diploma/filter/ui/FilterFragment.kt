@@ -19,7 +19,6 @@ import ru.practicum.android.diploma.filter.presentation.FilterState
 import ru.practicum.android.diploma.filter.presentation.FilterViewModel
 
 class FilterFragment : Fragment() {
-
     private var _binding: FragmentFilterBinding? = null
     private val binding get() = _binding!!
     private val viewModel by viewModel<FilterViewModel>()
@@ -57,16 +56,23 @@ class FilterFragment : Fragment() {
             } else {
                 binding.clearInput.visibility = View.VISIBLE
             }
+            viewModel.onInputSalaryEvent(text.toString())
+            setFilterBtnVisibility(viewModel.state.value ?: FilterState())
+        }
+        binding.checkbox.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.onCheckChangeEvent(isChecked)
+            setFilterBtnVisibility(viewModel.state.value ?: FilterState())
         }
         binding.clearInput.setOnClickListener {
             binding.salaryInputEditText.setText("")
+            setFilterBtnVisibility(viewModel.state.value?.copy(salary = "") ?: FilterState())
             val inputMethodManager =
                 requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             inputMethodManager?.hideSoftInputFromWindow(binding.salaryInputEditText.windowToken, 0)
         }
         binding.btApproveFilters.setOnClickListener {
             viewModel.onBtnSaveClickEvent(
-                salary = binding.salaryInputEditText.text.toString(),
+                salary = binding.salaryInputEditText.text?.toString() ?: "",
                 isChecked = binding.checkbox.isChecked
             )
             findNavController().popBackStack()
@@ -94,19 +100,23 @@ class FilterFragment : Fragment() {
             binding.branchOfJobText.setText(it.industry?.name ?: "")
             binding.checkbox.isChecked = it.isNotShowWithoutSalary
             binding.salaryInputEditText.setText(if (it.salary == null) "" else it.salary.toString())
-            if (isAvailableApplyFilters(it)) {
-                binding.btResetFilters.isVisible = true
-                binding.btApproveFilters.isVisible = true
-            } else {
-                binding.btResetFilters.isVisible = false
-                binding.btApproveFilters.isVisible = false
-            }
+            setFilterBtnVisibility(it)
+        }
+    }
+
+    private fun setFilterBtnVisibility(filterState: FilterState) {
+        if (isAvailableApplyFilters(filterState)) {
+            binding.btResetFilters.isVisible = true
+            binding.btApproveFilters.isVisible = true
+        } else {
+            binding.btResetFilters.isVisible = false
+            binding.btApproveFilters.isVisible = false
         }
     }
 
     private fun isAvailableApplyFilters(state: FilterState): Boolean {
-        return state.country !== null || state.area !== null || state.salary !== null
-            || state.isNotShowWithoutSalary || state.industry !== null
+        return state.country != null || state.area != null || !binding.salaryInputEditText.text.isNullOrEmpty()
+            || binding.checkbox.isChecked || state.industry != null
     }
 
     private fun changeIcon(editText: EditText, view: ImageView) {

@@ -42,7 +42,8 @@ val viewModelModule = module {
 
     viewModel {
         AreaViewModel(
-            areaUseCase = get()
+            areaUseCase = get(),
+            countryUseCase = get()
         )
     }
     viewModel {

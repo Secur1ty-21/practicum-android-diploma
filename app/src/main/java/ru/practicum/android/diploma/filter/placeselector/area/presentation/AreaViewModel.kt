@@ -11,12 +11,14 @@ import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetCountryByRegionUseCase
 import ru.practicum.android.diploma.util.Result
 
-class AreaViewModel(private val areaUseCase: GetAreasByTextUseCase) : ViewModel() {
+class AreaViewModel(private val areaUseCase: GetAreasByTextUseCase, private val countryUseCase: GetCountryByRegionUseCase) : ViewModel() {
     private val stateLiveData = MutableLiveData<AreaScreenState>()
     private var isClickAllowed = true
     private val areas: ArrayList<Area> = arrayListOf()
+
 
     fun observeState(): LiveData<AreaScreenState> = stateLiveData
 
@@ -41,6 +43,18 @@ class AreaViewModel(private val areaUseCase: GetAreasByTextUseCase) : ViewModel(
                 }
             }
         }
+    }
+
+    fun getCountryByRegion(areaId: String): Area? {
+        var area: Area? = null
+        viewModelScope.launch(Dispatchers.IO) {
+            countryUseCase.execute(areaId).collect {result ->
+                if (result is Result.Success) {
+                    area = result.data
+                }
+            }
+        }
+        return area
     }
 
     private fun renderState(areaScreenState: AreaScreenState) {

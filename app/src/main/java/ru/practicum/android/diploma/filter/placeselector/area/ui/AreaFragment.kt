@@ -86,13 +86,27 @@ class AreaFragment : Fragment() {
 
     private fun transitionToPlaceSelector(area: Area) {
         if (viewModel.clickDebounce()) {
-            setFragmentResult(
-                requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
-                result = bundleOf(
-                    PlaceSelectorFragment.AREA_ID_KEY to area.id,
-                    PlaceSelectorFragment.AREA_NAME_KEY to area.name
+            if (countryId.isNullOrEmpty()) {
+                val country = viewModel.getCountryByRegion(area.parentId!!)
+                setFragmentResult(
+                    requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
+                    result = bundleOf(
+                        PlaceSelectorFragment.COUNTRY_NAME_KEY to country?.name,
+                        PlaceSelectorFragment.COUNTRY_ID_KEY to country?.id,
+                        PlaceSelectorFragment.AREA_NAME_KEY to area.name,
+                        PlaceSelectorFragment.AREA_ID_KEY to area.id
+                    )
                 )
-            )
+            } else {
+                setFragmentResult(
+                    requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
+                    result = bundleOf(
+                        PlaceSelectorFragment.AREA_ID_KEY to area.id,
+                        PlaceSelectorFragment.AREA_NAME_KEY to area.name
+                    )
+                )
+            }
+
             findNavController().popBackStack()
         }
     }

@@ -12,6 +12,7 @@ import ru.practicum.android.diploma.filter.domain.usecase.GetFiltersUseCase
 import ru.practicum.android.diploma.filter.domain.usecase.SaveFiltersUseCase
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreaFilterUseCase
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetCountryByRegionUseCase
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.SaveAreaUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountriesUseCase
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountryFilterUseCase
@@ -84,5 +85,8 @@ val interactorModule = module {
     }
     factory {
         GetApplyFilterFlagUseCase(filterRepository = get())
+    }
+    factory {
+       GetCountryByRegionUseCase(areaRepository = get())
     }
 }

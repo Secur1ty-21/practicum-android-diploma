@@ -37,6 +37,37 @@ class AreaRepositoryImpl(
         }
     }
 
+    override fun getAreaByRegion(areaId: String): Flow<Result<Area, AreaError>> = flow {
+        val response = networkClient.getAreas()
+        when (response.resultCode) {
+            NetworkClient.SUCCESSFUL_CODE -> {
+                var data = (response as GetAreasResponse).areas
+                data = unCoverList(data)
+                var tempId = areaId
+                while (!tempId.isNullOrEmpty()) {
+                    val area = data.filter {
+                        it.id == tempId
+                    }
+
+                    if (!area.isEmpty()) {
+                        if (area[0].parentId.isNullOrEmpty()) {
+                            emit(Result.Success(area[0].mapToDomain()))
+                        } else {
+                            tempId = area[0].parentId!!
+                        }
+                        break
+                    }
+                }
+                emit(Result.Error(AreaError.GetError))
+
+            }
+            else -> {
+                emit(Result.Error(AreaError.GetError))
+            }
+        }
+    }
+
+
     private fun getCountryRegions(data: List<AreasDto>, countryId: String): List<AreasDto> {
         for (area in data) {
             if (area.id == countryId) {

@@ -6,3 +6,7 @@ import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 fun List<AreasDto>.mapToDomain(): List<Area> {
     return this.map { Area(it.id, it.name, it.parentId) }
 }
+
+fun AreasDto.mapToDomain(): Area {
+    return Area(this.id, this.name, this.parentId)
+}

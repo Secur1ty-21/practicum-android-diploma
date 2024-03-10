@@ -107,7 +107,7 @@ class VacancyFragment : Fragment() {
         binding.textViewDescriptionValue.text = detailVacancy.description
         setSalary(detailVacancy.salaryFrom, detailVacancy.salaryTo, detailVacancy.currency)
         setLogo(detailVacancy.employerLogoUrl)
-        setKeySkills(detailVacancy.keySkills, requireContext().resources)
+        setKeySkills(requireContext().resources)
         setLocation(detailVacancy.city, detailVacancy.area)
         setContactInfo(
             detailVacancy.contactName,
@@ -146,9 +146,9 @@ class VacancyFragment : Fragment() {
         )
     }
 
-    private fun setKeySkills(keySkills: List<String>, resources: Resources) {
-        val formattedKeySkills = viewModel.formatKeySkills(keySkills, resources)
-        if (keySkills.isEmpty()) {
+    private fun setKeySkills(resources: Resources) {
+        val formattedKeySkills = viewModel.formatKeySkills(resources)
+        if (detailVacancy?.keySkills?.isEmpty() == true) {
             binding.textViewKeySkillsTitle.isVisible = false
             binding.textViewKeySkillsValue.isVisible = false
         } else {

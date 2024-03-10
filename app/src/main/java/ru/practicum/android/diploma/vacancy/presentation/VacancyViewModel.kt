@@ -88,12 +88,12 @@ class VacancyViewModel(
         }
     }
 
-    fun formatKeySkills(keySkills: List<String>, resources: Resources): String {
-        return if (keySkills.isEmpty()) {
+    fun formatKeySkills(resources: Resources): String {
+        return if (vacancy?.keySkills?.isEmpty() == true) {
             ""
         } else {
             val keySkillsText = StringBuilder()
-            keySkills.forEachIndexed { _, keySkill ->
+            vacancy?.keySkills?.forEachIndexed { _, keySkill ->
                 val formattedSkill = resources.getString(R.string.tv_detail_vacancy_keySkill, keySkill)
                 keySkillsText.append(formattedSkill)
             }

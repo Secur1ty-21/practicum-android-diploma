@@ -1,5 +1,6 @@
 package ru.practicum.android.diploma.filter.placeselector.country.presentation
 
+import android.content.res.Resources
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.core.domain.model.Country
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.placeselector.country.domain.usecase.GetCountriesUseCase
@@ -14,7 +16,8 @@ import ru.practicum.android.diploma.util.Resource
 import ru.practicum.android.diploma.util.StringUtils
 
 class CountryViewModel(
-    private val countryUseCase: GetCountriesUseCase
+    private val countryUseCase: GetCountriesUseCase,
+    private val resources: Resources
 ) : ViewModel() {
     private val stateLiveData = MutableLiveData<CountryScreenState>()
     private var isClickAllowed = true
@@ -36,7 +39,7 @@ class CountryViewModel(
                             StringUtils.getCountryList(country.name)
                         }
                         countries.addAll(filteredCountries)
-                        countries.add(Country("", "Другие регионы"))
+                        countries.add(Country("", resources.getString(R.string.other_regions)))
                         renderState(CountryScreenState.Content(countries))
                     }
 

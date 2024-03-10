@@ -81,7 +81,7 @@ class PlaceSelectorFragment : Fragment() {
                 )
             }
         }
-        viewModel.init()
+        viewModel.initFilters()
     }
 
     private fun initUi() {

@@ -3,7 +3,7 @@ package ru.practicum.android.diploma.filter.data
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ru.practicum.android.diploma.core.data.NetworkClient
-import ru.practicum.android.diploma.core.data.mapper.VacancyMapper
+import ru.practicum.android.diploma.core.data.mapper.mapToDomain
 import ru.practicum.android.diploma.core.data.network.dto.CountryResponse
 import ru.practicum.android.diploma.core.data.storage.sharedpreferences.FilterStorage
 import ru.practicum.android.diploma.core.domain.model.Country
@@ -21,7 +21,7 @@ class FilterRepositoryImpl(
         when (response.resultCode) {
             NetworkClient.SUCCESSFUL_CODE -> {
                 val countryResponse = response as CountryResponse
-                val domainModel = countryResponse.countries.map { countryDto -> VacancyMapper.mapToDomain(countryDto) }
+                val domainModel = countryResponse.countries.map { countryDto -> mapToDomain(countryDto) }
                 emit(Resource.Success(data = domainModel))
             }
 

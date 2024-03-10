@@ -77,7 +77,7 @@ class SearchViewModel(
                 }
 
                 is FilterType.Salary -> {
-                    parameters = parameters.copy(salary = it.amount.toString())
+                    parameters = parameters.copy(salary = it.amount)
                 }
 
                 is FilterType.Industry -> {
@@ -150,20 +150,36 @@ class SearchViewModel(
     private fun processSearchByPageResult(result: Resource<SearchVacanciesResult>, page: Int) {
         when (result) {
             is Resource.Success -> {
-                if (!result.data?.vacancies.isNullOrEmpty()) {
+                if (result.data != null && result.data.vacancies.isNotEmpty()) {
                     previousSearchPage = page
-                    stateLiveData.postValue(SearchState.Pagination(result.data?.vacancies ?: emptyList()))
+                    stateLiveData.postValue(
+                        SearchState.Pagination(result.data)
+                    )
                 } else {
-                    stateLiveData.postValue(SearchState.Pagination(emptyList()))
+                    stateLiveData.postValue(
+                        SearchState.Pagination(
+                            SearchVacanciesResult(result.data?.numOfResults ?: 0, emptyList())
+                        )
+                    )
                 }
             }
 
             is Resource.ServerError -> {
-                stateLiveData.postValue(SearchState.Pagination(emptyList(), SearchState.ServerError))
+                stateLiveData.postValue(
+                    SearchState.Pagination(
+                        SearchVacanciesResult(0, emptyList()),
+                        SearchState.ServerError
+                    )
+                )
             }
 
             is Resource.InternetError -> {
-                stateLiveData.postValue(SearchState.Pagination(emptyList(), SearchState.NetworkError))
+                stateLiveData.postValue(
+                    SearchState.Pagination(
+                        SearchVacanciesResult(0, emptyList()),
+                        SearchState.NetworkError
+                    )
+                )
             }
         }
     }

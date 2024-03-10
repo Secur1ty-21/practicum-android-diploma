@@ -8,15 +8,18 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentFilterBinding
 import ru.practicum.android.diploma.filter.presentation.FilterState
 import ru.practicum.android.diploma.filter.presentation.FilterViewModel
+import ru.practicum.android.diploma.search.ui.SearchFragment
 
 class FilterFragment : Fragment() {
     private var _binding: FragmentFilterBinding? = null
@@ -39,9 +42,7 @@ class FilterFragment : Fragment() {
     }
 
     private fun initListeners() {
-        binding.filterToolbar.setNavigationOnClickListener {
-            findNavController().popBackStack()
-        }
+        binding.filterToolbar.setNavigationOnClickListener { findNavController().popBackStack() }
         binding.placeOfJobNavigation.setOnClickListener {
             findNavController().navigate(R.id.action_filterFragment_to_placeSelectorFragment)
         }
@@ -63,23 +64,34 @@ class FilterFragment : Fragment() {
             viewModel.onCheckChangeEvent(isChecked)
             setFilterBtnVisibility(viewModel.state.value ?: FilterState())
         }
-        binding.clearInput.setOnClickListener {
-            binding.salaryInputEditText.setText("")
-            setFilterBtnVisibility(viewModel.state.value?.copy(salary = "") ?: FilterState())
-            val inputMethodManager =
-                requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-            inputMethodManager?.hideSoftInputFromWindow(binding.salaryInputEditText.windowToken, 0)
-        }
-        binding.btApproveFilters.setOnClickListener {
-            viewModel.onBtnSaveClickEvent(
-                salary = binding.salaryInputEditText.text?.toString() ?: "",
-                isChecked = binding.checkbox.isChecked
-            )
-            findNavController().popBackStack()
-        }
+        binding.clearInput.setOnClickListener { onBtnClearClick() }
+        binding.btApproveFilters.setOnClickListener { onBtnApproveClick() }
         binding.btResetFilters.setOnClickListener {
             viewModel.onBtnResetClickEvent()
         }
+    }
+
+    private fun onBtnApproveClick() {
+        viewModel.onBtnSaveClickEvent(
+            salary = binding.salaryInputEditText.text?.toString() ?: "",
+            isChecked = binding.checkbox.isChecked
+        )
+        setFragmentResult(
+            SearchFragment.SEARCH_FRAGMENT_KEY,
+            bundleOf(SearchFragment.FILTER_APPLIED_KEY to true)
+        )
+        findNavController().popBackStack()
+    }
+
+    private fun onBtnClearClick() {
+        binding.salaryInputEditText.setText("")
+        setFilterBtnVisibility(viewModel.state.value?.copy(salary = "") ?: FilterState())
+        hideKeyboard()
+    }
+
+    private fun hideKeyboard() {
+        val inputMethodManager = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        inputMethodManager?.hideSoftInputFromWindow(binding.salaryInputEditText.windowToken, 0)
     }
 
     private fun getData() {

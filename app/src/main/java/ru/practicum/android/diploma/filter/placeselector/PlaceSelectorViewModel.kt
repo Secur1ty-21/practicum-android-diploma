@@ -42,19 +42,9 @@ class PlaceSelectorViewModel(
         }
     }
 
-    fun onCountryFragmentResultEvent(countryId: String, countryName: String) {
+    fun onFragmentResultEvent(countryId: String, countryName: String, areaId: String, areaName: String) {
         _state.value?.let {
-            if (countryId != it.country?.id) {
-                _state.postValue(it.copy(country = Country(countryId, countryName), area = null))
-            } else {
-                _state.postValue(it.copy(country = Country(countryId, countryName)))
-            }
-        }
-    }
-
-    fun onAreaFragmentResultEvent(areaId: String, areaName: String) {
-        _state.value?.let {
-            _state.postValue(it.copy(area = Area(areaId, areaName, null)))
+            _state.postValue(it.copy(country = Country(countryId, countryName), area = Area(areaId, areaName, null)))
         }
     }
 

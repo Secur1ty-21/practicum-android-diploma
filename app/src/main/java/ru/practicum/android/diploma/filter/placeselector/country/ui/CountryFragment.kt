@@ -74,7 +74,9 @@ class CountryFragment : Fragment() {
                 requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
                 result = bundleOf(
                     PlaceSelectorFragment.COUNTRY_ID_KEY to countryId,
-                    PlaceSelectorFragment.COUNTRY_NAME_KEY to countryName
+                    PlaceSelectorFragment.COUNTRY_NAME_KEY to countryName,
+                    PlaceSelectorFragment.AREA_ID_KEY to "",
+                    PlaceSelectorFragment.AREA_NAME_KEY to ""
                 )
             )
             findNavController().popBackStack()

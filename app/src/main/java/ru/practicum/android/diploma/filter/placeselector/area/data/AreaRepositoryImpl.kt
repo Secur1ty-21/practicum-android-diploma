@@ -1,5 +1,6 @@
 package ru.practicum.android.diploma.filter.placeselector.area.data
 
+import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ru.practicum.android.diploma.core.data.NetworkClient
@@ -37,29 +38,13 @@ class AreaRepositoryImpl(
         }
     }
 
-    override fun getAreaByRegion(areaId: String): Flow<Result<Area, AreaError>> = flow {
+    override fun getAllArea(): Flow<Result<List<Area>, AreaError>> = flow {
         val response = networkClient.getAreas()
         when (response.resultCode) {
             NetworkClient.SUCCESSFUL_CODE -> {
                 var data = (response as GetAreasResponse).areas
                 data = unCoverList(data)
-                var tempId = areaId
-                while (!tempId.isNullOrEmpty()) {
-                    val area = data.filter {
-                        it.id == tempId
-                    }
-
-                    if (!area.isEmpty()) {
-                        if (area[0].parentId.isNullOrEmpty()) {
-                            emit(Result.Success(area[0].mapToDomain()))
-                        } else {
-                            tempId = area[0].parentId!!
-                        }
-                        break
-                    }
-                }
-                emit(Result.Error(AreaError.GetError))
-
+                emit(Result.Success(data.mapToDomain()))
             }
             else -> {
                 emit(Result.Error(AreaError.GetError))
@@ -78,17 +63,16 @@ class AreaRepositoryImpl(
     }
 
     private fun unCoverList(data: List<AreasDto>): List<AreasDto> {
-        var newData = data
-        while (isExistNested(newData)) {
-            newData = newData.flatMap {
-                if (it.areas.isNullOrEmpty()) {
-                    listOf(it)
-                } else {
-                    it.areas
+        val newList = mutableListOf<AreasDto>().apply { addAll(data) }
+        while (isExistNested(newList)) {
+            for (i in newList.indices) {
+                if (!newList[i].areas.isNullOrEmpty()) {
+                    newList.addAll(newList[i].areas ?: emptyList())
+                    newList[i] = newList[i].copy(areas = emptyList())
                 }
             }
         }
-        return newData
+        return newList
     }
 
     private fun isExistNested(list: List<AreasDto>): Boolean {

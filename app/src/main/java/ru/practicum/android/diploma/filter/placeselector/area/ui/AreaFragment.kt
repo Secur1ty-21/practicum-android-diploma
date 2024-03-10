@@ -29,6 +29,7 @@ class AreaFragment : Fragment() {
         transitionToPlaceSelector(area)
     }
     private var countryId = ""
+    private var countryName = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,6 +46,8 @@ class AreaFragment : Fragment() {
             findNavController().popBackStack()
         }
         countryId = AreaFragmentArgs.fromBundle(requireArguments()).countryId
+        countryName = AreaFragmentArgs.fromBundle(requireArguments()).countryName
+
         viewModel.getAreas("", countryId)
         viewModel.observeState().observe(viewLifecycleOwner) {
             render(it)
@@ -86,27 +89,18 @@ class AreaFragment : Fragment() {
 
     private fun transitionToPlaceSelector(area: Area) {
         if (viewModel.clickDebounce()) {
-            if (countryId.isNullOrEmpty()) {
-                val country = viewModel.getCountryByRegion(area.parentId!!)
-                setFragmentResult(
-                    requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
-                    result = bundleOf(
-                        PlaceSelectorFragment.COUNTRY_NAME_KEY to country?.name,
-                        PlaceSelectorFragment.COUNTRY_ID_KEY to country?.id,
-                        PlaceSelectorFragment.AREA_NAME_KEY to area.name,
-                        PlaceSelectorFragment.AREA_ID_KEY to area.id
-                    )
+            val country = viewModel.getCountryByRegion(area.parentId!!)
+            countryId = country?.id!!
+            countryName = country?.name!!
+            setFragmentResult(
+                requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
+                result = bundleOf(
+                    PlaceSelectorFragment.COUNTRY_NAME_KEY to countryName,
+                    PlaceSelectorFragment.COUNTRY_ID_KEY to countryId,
+                    PlaceSelectorFragment.AREA_NAME_KEY to area.name,
+                    PlaceSelectorFragment.AREA_ID_KEY to area.id
                 )
-            } else {
-                setFragmentResult(
-                    requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
-                    result = bundleOf(
-                        PlaceSelectorFragment.AREA_ID_KEY to area.id,
-                        PlaceSelectorFragment.AREA_NAME_KEY to area.name
-                    )
-                )
-            }
-
+            )
             findNavController().popBackStack()
         }
     }

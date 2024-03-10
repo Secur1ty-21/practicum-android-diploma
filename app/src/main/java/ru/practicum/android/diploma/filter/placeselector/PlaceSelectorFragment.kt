@@ -68,18 +68,12 @@ class PlaceSelectorFragment : Fragment() {
 
     private fun getData() {
         setFragmentResultListener(PLACE_SELECTOR_KEY) { _, bundle ->
-            if (bundle.containsKey(COUNTRY_ID_KEY) && bundle.containsKey(COUNTRY_NAME_KEY)) {
-                viewModel.onCountryFragmentResultEvent(
-                    countryId = bundle.getString(COUNTRY_ID_KEY, ""),
-                    countryName = bundle.getString(COUNTRY_NAME_KEY, "")
-                )
-            }
-            if (bundle.containsKey(AREA_ID_KEY) && bundle.containsKey(AREA_NAME_KEY)) {
-                viewModel.onAreaFragmentResultEvent(
-                    areaId = bundle.getString(AREA_ID_KEY, ""),
-                    areaName = bundle.getString(AREA_NAME_KEY, "")
-                )
-            }
+            viewModel.onFragmentResultEvent(
+                countryId = bundle.getString(COUNTRY_ID_KEY, ""),
+                countryName = bundle.getString(COUNTRY_NAME_KEY, ""),
+                areaId = bundle.getString(AREA_ID_KEY, ""),
+                areaName = bundle.getString(AREA_NAME_KEY, "")
+            )
         }
         viewModel.init()
     }
@@ -107,6 +101,8 @@ class PlaceSelectorFragment : Fragment() {
                 view.setOnClickListener {
                     editText.setText("")
                     if (it.id == binding.countryIcon.id) {
+                        countryId = ""
+                        countryName = ""
                         viewModel.onBtnClearCountryClickEvent()
                     } else if (it.id == binding.regionIcon.id) {
                         viewModel.onBtnClearAreaClickEvent()

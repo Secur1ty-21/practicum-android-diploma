@@ -49,7 +49,8 @@ val viewModelModule = module {
     viewModel {
         BranchViewModel(
             getIndustryByTextUseCase = get(),
-            saveIndustryUseCase = get()
+            saveIndustryUseCase = get(),
+            getIndustryFilterUseCase = get()
         )
     }
 

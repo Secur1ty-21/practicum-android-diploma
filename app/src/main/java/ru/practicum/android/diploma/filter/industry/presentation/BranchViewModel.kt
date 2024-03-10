@@ -11,18 +11,19 @@ import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.industry.domain.model.Industry
 import ru.practicum.android.diploma.filter.industry.domain.model.IndustryError
 import ru.practicum.android.diploma.filter.industry.domain.usecase.GetIndustriesByTextUseCase
+import ru.practicum.android.diploma.filter.industry.domain.usecase.GetIndustryFilterUseCase
 import ru.practicum.android.diploma.filter.industry.domain.usecase.SaveIndustryUseCase
 import ru.practicum.android.diploma.util.Result
 
 class BranchViewModel(
     private val getIndustryByTextUseCase: GetIndustriesByTextUseCase,
-    private val saveIndustryUseCase: SaveIndustryUseCase
+    private val saveIndustryUseCase: SaveIndustryUseCase,
+    getIndustryFilterUseCase: GetIndustryFilterUseCase
 ) : ViewModel() {
     private val stateLiveData = MutableLiveData<BranchScreenState>()
     private var isClickAllowed = true
     private val branches: ArrayList<Industry> = arrayListOf()
-    private var selectedIndustry: Industry? = null
-    private var selectedIndex: Int? = null
+    private var selectedIndustry: Industry? = getIndustryFilterUseCase.execute()
 
     fun observeState(): LiveData<BranchScreenState> = stateLiveData
 
@@ -37,8 +38,7 @@ class BranchViewModel(
                         renderState(
                             BranchScreenState.Content(
                                 branches,
-                                this@BranchViewModel.selectedIndustry,
-                                selectedIndex
+                                this@BranchViewModel.selectedIndustry
                             )
                         )
                     }
@@ -60,17 +60,15 @@ class BranchViewModel(
             for (i in branches.indices) {
                 if (branches[i].id == selectedIndustry.id) {
                     this@BranchViewModel.selectedIndustry = selectedIndustry
-                    selectedIndex = i
                     break
                 }
             }
         }
     }
 
-    fun onSelectIndustryEvent(industry: Industry, index: Int) {
+    fun onSelectIndustryEvent(industry: Industry) {
         selectedIndustry = industry
-        selectedIndex = index
-        renderState(BranchScreenState.Content(branches, selectedIndustry, selectedIndex))
+        renderState(BranchScreenState.Content(branches, selectedIndustry))
     }
 
     private fun renderState(branchScreenState: BranchScreenState) {

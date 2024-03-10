@@ -6,7 +6,6 @@ sealed class BranchScreenState {
     class Content(
         val branches: ArrayList<Industry>,
         val selectedIndustry: Industry?,
-        val selectedIndex: Int?
     ) : BranchScreenState()
 
     data object Error : BranchScreenState()

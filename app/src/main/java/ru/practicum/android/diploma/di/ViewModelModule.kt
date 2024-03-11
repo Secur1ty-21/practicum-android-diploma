@@ -1,5 +1,6 @@
 package ru.practicum.android.diploma.di
 
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import ru.practicum.android.diploma.favourites.presentation.FavouritesViewModel
@@ -36,7 +37,8 @@ val viewModelModule = module {
 
     viewModel {
         CountryViewModel(
-            countryUseCase = get()
+            countryUseCase = get(),
+            resources = androidContext().resources
         )
     }
 

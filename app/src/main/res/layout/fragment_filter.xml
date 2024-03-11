@@ -22,7 +22,8 @@
         android:id="@+id/placeOfJob"
         style="@style/FilterStyle"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
+        android:minHeight="60dp"
         android:layout_marginTop="@dimen/tv_filter_margin_s"
         android:hint="@string/tv_place_of_job"
         app:layout_constraintTop_toBottomOf="@id/filterToolbar">
@@ -50,7 +51,8 @@
         android:id="@+id/branchOfJob"
         style="@style/FilterStyle"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
+        android:minHeight="60dp"
         android:hint="@string/tv_branch"
         app:layout_constraintTop_toBottomOf="@id/placeOfJob">
 

@@ -8,15 +8,17 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.core.domain.model.SearchVacanciesResult
-import ru.practicum.android.diploma.core.domain.model.ShortVacancy
 import ru.practicum.android.diploma.databinding.FragmentSearchBinding
 import ru.practicum.android.diploma.search.domain.usecase.SearchVacancyUseCase
 import ru.practicum.android.diploma.search.presentation.SearchState
@@ -29,7 +31,6 @@ class SearchFragment : Fragment() {
         transitionToDetailedVacancy(vacancy.id)
     }
     private var isLastPageReached = false
-    private var isWasPaginationError = false
     private var onScrollLister: RecyclerView.OnScrollListener? = null
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
@@ -48,6 +49,11 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel.observeState().observe(viewLifecycleOwner) {
             render(it)
+        }
+        setFragmentResultListener(SEARCH_FRAGMENT_KEY) { _, bundle ->
+            if (bundle.containsKey(FILTER_APPLIED_KEY)) {
+                viewModel.searchByButton(binding.searchEditText.text?.toString() ?: "")
+            }
         }
         setupListeners()
         renderFilterStatus()
@@ -145,32 +151,36 @@ class SearchFragment : Fragment() {
             }
 
             is SearchState.Content -> showContent(it.data!!)
-
-            is SearchState.Pagination -> {
-                updateContent(it.data, it.error)
-            }
-
+            is SearchState.Pagination -> updateContent(it.data, it.error)
             is SearchState.ServerError -> {
-                showServerError()
+                showError(R.drawable.placeholder_no_internet, R.string.placeholder_no_internet)
             }
 
-            is SearchState.NetworkError -> showNetworkError()
-            is SearchState.EmptyResult -> showEmptyResult()
+            is SearchState.NetworkError -> {
+                showError(R.drawable.placeholder_server_error, R.string.placeholder_server_error)
+            }
+
+            is SearchState.EmptyResult -> {
+                showError(R.drawable.placeholder_nothing_found, R.string.placeholder_cannot_get_list_of_vacancy)
+            }
         }
     }
 
-    private fun updateContent(vacancies: List<ShortVacancy>, error: SearchState?) {
+    private fun updateContent(result: SearchVacanciesResult, error: SearchState?) {
         binding.paginationProgressBar.visibility = View.GONE
-        if (vacancies.isNotEmpty()) {
+        if (result.vacancies.isNotEmpty()) {
             isWasPaginationError = false
-            isLastPageReached = vacancies.size < SearchVacancyUseCase.DEFAULT_VACANCIES_PER_PAGE
-            vacancyAdapter.pagination(vacancies)
+            isLastPageReached = result.vacancies.size < SearchVacancyUseCase.DEFAULT_VACANCIES_PER_PAGE
+            vacancyAdapter.pagination(result.vacancies)
             binding.tvVacancyAmount.text =
                 requireContext().resources.getQuantityString(
                     R.plurals.vacancies,
                     vacancyAmount ?: 0,
                     vacancyAmount ?: 0
                 )
+        }
+        if (result.numOfResults != 0) {
+            setLblVacancyAmount(result.numOfResults)
         }
         if (error is SearchState.NetworkError) {
             isWasPaginationError = true
@@ -183,40 +193,24 @@ class SearchFragment : Fragment() {
         }
     }
 
-    private fun showToast(text: String) {
-        Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
-    }
+    private fun showToast(text: String) = Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
 
     private fun showContent(searchVacanciesResult: SearchVacanciesResult) {
         isLastPageReached = searchVacanciesResult.vacancies.size < SearchVacancyUseCase.DEFAULT_VACANCIES_PER_PAGE
         vacancyAdapter.updateList(searchVacanciesResult.vacancies)
-        binding.tvVacancyAmount.text =
-            requireContext().resources.getQuantityString(
-                R.plurals.vacancies,
-                searchVacanciesResult.numOfResults,
-                searchVacanciesResult.numOfResults
-            )
+        setLblVacancyAmount(searchVacanciesResult.numOfResults)
         vacancyAmount = searchVacanciesResult.numOfResults
         setStatus(SearchStatus.SUCCESS)
     }
 
-    private fun showNetworkError() {
-        binding.errorPlaceholder.setImageResource(R.drawable.placeholder_no_internet)
-        binding.placeholderText.setText(R.string.placeholder_no_internet)
-        vacancyAdapter.updateList(emptyList())
-        setStatus(SearchStatus.ERROR)
+    private fun setLblVacancyAmount(numOfResults: Int) {
+        binding.tvVacancyAmount.text =
+            requireContext().resources.getQuantityString(R.plurals.vacancies, numOfResults, numOfResults)
     }
 
-    private fun showEmptyResult() {
-        binding.errorPlaceholder.setImageResource(R.drawable.placeholder_nothing_found)
-        binding.placeholderText.setText(R.string.placeholder_cannot_get_list_of_vacancy)
-        vacancyAdapter.updateList(emptyList())
-        setStatus(SearchStatus.ERROR)
-    }
-
-    private fun showServerError() {
-        binding.errorPlaceholder.setImageResource(R.drawable.placeholder_server_error)
-        binding.placeholderText.setText(R.string.placeholder_server_error)
+    private fun showError(@DrawableRes placeHolderId: Int, @StringRes placeHolderMsg: Int) {
+        binding.errorPlaceholder.setImageResource(placeHolderId)
+        binding.placeholderText.text = getString(placeHolderMsg)
         vacancyAdapter.updateList(emptyList())
         setStatus(SearchStatus.ERROR)
     }
@@ -239,7 +233,6 @@ class SearchFragment : Fragment() {
                 binding.placeholderText.visibility = View.VISIBLE
                 binding.errorPlaceholder.visibility = View.VISIBLE
                 binding.tvVacancyAmount.visibility = View.GONE
-                binding.paginationProgressBar.visibility = View.GONE
             }
 
             SearchStatus.SUCCESS -> {
@@ -280,5 +273,7 @@ class SearchFragment : Fragment() {
 
     companion object {
         private const val PRE_PAGINATION_ITEM_COUNT = 5
+        const val SEARCH_FRAGMENT_KEY = "SEARCH_FRAGMENT_KEY"
+        const val FILTER_APPLIED_KEY = "FILTER_APPLIED_KEY"
     }
 }

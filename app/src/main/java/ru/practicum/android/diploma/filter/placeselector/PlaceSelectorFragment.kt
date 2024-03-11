@@ -75,7 +75,7 @@ class PlaceSelectorFragment : Fragment() {
                 areaName = bundle.getString(AREA_NAME_KEY, "")
             )
         }
-        viewModel.init()
+        viewModel.initFilters()
     }
 
     private fun initUi() {

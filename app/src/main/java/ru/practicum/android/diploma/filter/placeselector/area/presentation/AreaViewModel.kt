@@ -10,8 +10,8 @@ import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
-import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAllAreaUseCase
+import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAreasByTextUseCase
 import ru.practicum.android.diploma.util.Result
 
 class AreaViewModel(
@@ -22,7 +22,6 @@ class AreaViewModel(
     private var isClickAllowed = true
     private val areas: ArrayList<Area> = arrayListOf()
     private var allAreas: ArrayList<Area> = arrayListOf()
-
 
     fun observeState(): LiveData<AreaScreenState> = stateLiveData
 

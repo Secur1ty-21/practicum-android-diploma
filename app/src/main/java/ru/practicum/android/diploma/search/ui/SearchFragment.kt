@@ -30,6 +30,7 @@ class SearchFragment : Fragment() {
     private var vacancyAdapter: VacancyAdapter = VacancyAdapter { vacancy ->
         transitionToDetailedVacancy(vacancy.id)
     }
+    private var isWasPaginationError = false
     private var isLastPageReached = false
     private var onScrollLister: RecyclerView.OnScrollListener? = null
     private var _binding: FragmentSearchBinding? = null

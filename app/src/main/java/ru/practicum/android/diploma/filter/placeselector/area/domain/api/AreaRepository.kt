@@ -8,4 +8,6 @@ import ru.practicum.android.diploma.util.Result
 interface AreaRepository {
     fun getAreas(id: String): Flow<Result<List<Area>, AreaError>>
 
+    fun getAllArea(): Flow<Result<List<Area>, AreaError>>
+
 }

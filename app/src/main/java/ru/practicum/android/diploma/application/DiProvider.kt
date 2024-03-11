@@ -7,7 +7,7 @@ import ru.practicum.android.diploma.di.viewModelModule
 import ru.practicum.android.diploma.filter.industry.di.industryDomainModule
 import ru.practicum.android.diploma.filter.industry.di.industryRepositoryModule
 
-object DiModuleProvider {
+object DiProvider {
     val industryModules = listOf(
         industryRepositoryModule,
         industryDomainModule

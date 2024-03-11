@@ -28,6 +28,7 @@ class SearchViewModel(
     private var searchByTextJob: Job? = null
     private var previousSearchText = ""
     private var previousSearchPage = -1
+    private var lastVacancyAmount = 0
 
     fun observeState(): LiveData<SearchState> = stateLiveData
 
@@ -115,6 +116,7 @@ class SearchViewModel(
                     stateLiveData.postValue(SearchState.EmptyResult)
                 } else {
                     clearSearch()
+                    lastVacancyAmount = result.data?.numOfResults ?: 0
                     stateLiveData.postValue(SearchState.Content(result.data))
                 }
             }
@@ -152,13 +154,14 @@ class SearchViewModel(
             is Resource.Success -> {
                 if (result.data != null && result.data.vacancies.isNotEmpty()) {
                     previousSearchPage = page
+                    lastVacancyAmount = result.data.numOfResults
                     stateLiveData.postValue(
                         SearchState.Pagination(result.data)
                     )
                 } else {
                     stateLiveData.postValue(
                         SearchState.Pagination(
-                            SearchVacanciesResult(result.data?.numOfResults ?: 0, emptyList())
+                            SearchVacanciesResult(lastVacancyAmount, emptyList())
                         )
                     )
                 }
@@ -167,7 +170,7 @@ class SearchViewModel(
             is Resource.ServerError -> {
                 stateLiveData.postValue(
                     SearchState.Pagination(
-                        SearchVacanciesResult(0, emptyList()),
+                        SearchVacanciesResult(lastVacancyAmount, emptyList()),
                         SearchState.ServerError
                     )
                 )
@@ -176,7 +179,7 @@ class SearchViewModel(
             is Resource.InternetError -> {
                 stateLiveData.postValue(
                     SearchState.Pagination(
-                        SearchVacanciesResult(0, emptyList()),
+                        SearchVacanciesResult(lastVacancyAmount, emptyList()),
                         SearchState.NetworkError
                     )
                 )
@@ -191,6 +194,9 @@ class SearchViewModel(
 
     fun clearSearch() {
         stateLiveData.postValue(SearchState.Default)
+        previousSearchText = ""
+        previousSearchPage = -1
+        lastVacancyAmount = 0
     }
 
     fun isFilterApplied(): Boolean {

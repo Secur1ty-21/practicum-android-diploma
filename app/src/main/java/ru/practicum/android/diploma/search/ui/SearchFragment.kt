@@ -30,6 +30,7 @@ class SearchFragment : Fragment() {
     private var vacancyAdapter: VacancyAdapter = VacancyAdapter { vacancy ->
         transitionToDetailedVacancy(vacancy.id)
     }
+    private var isWasPaginationError = false
     private var isLastPageReached = false
     private var onScrollLister: RecyclerView.OnScrollListener? = null
     private var _binding: FragmentSearchBinding? = null
@@ -103,7 +104,7 @@ class SearchFragment : Fragment() {
                 val currentLastVisibleItem = (recyclerView.layoutManager as LinearLayoutManager)
                     .findLastVisibleItemPosition()
                 if (isTimeToGetNextPage(currentLastVisibleItem) && currentLastVisibleItem != lastVisibleItem) {
-                    if (isScrolledToLastItem(currentLastVisibleItem)) {
+                    if (isScrolledToLastItem(currentLastVisibleItem) && !isWasPaginationError) {
                         binding.paginationProgressBar.show()
                     } else {
                         binding.paginationProgressBar.visibility = View.GONE
@@ -124,6 +125,7 @@ class SearchFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         onScrollLister?.let { binding.vacancyRecycler.removeOnScrollListener(it) }
+        _binding = null
     }
 
     private fun isTimeToGetNextPage(lastVisibleItem: Int): Boolean {
@@ -169,6 +171,7 @@ class SearchFragment : Fragment() {
     private fun updateContent(result: SearchVacanciesResult, error: SearchState?) {
         binding.paginationProgressBar.visibility = View.GONE
         if (result.vacancies.isNotEmpty()) {
+            isWasPaginationError = false
             isLastPageReached = result.vacancies.size < SearchVacancyUseCase.DEFAULT_VACANCIES_PER_PAGE
             vacancyAdapter.pagination(result.vacancies)
             binding.tvVacancyAmount.text =
@@ -182,8 +185,12 @@ class SearchFragment : Fragment() {
             setLblVacancyAmount(result.numOfResults)
         }
         if (error is SearchState.NetworkError) {
+            isWasPaginationError = true
+            binding.paginationProgressBar.visibility = View.GONE
             showToast(getString(R.string.pagination_error_error_connection))
         } else if (error is SearchState.ServerError) {
+            isWasPaginationError = true
+            binding.paginationProgressBar.visibility = View.GONE
             showToast(getString(R.string.pagination_error_server_error))
         }
     }

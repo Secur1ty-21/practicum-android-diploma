@@ -20,7 +20,6 @@ class PlaceSelectorFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: PlaceSelectorViewModel by viewModel()
 
-    private var countryName: String = ""
     private var countryId: String = ""
     private var regionName: String = ""
 
@@ -60,7 +59,7 @@ class PlaceSelectorFragment : Fragment() {
         binding.regionNavigation.setOnClickListener {
             val action = PlaceSelectorFragmentDirections.actionPlaceSelectorFragmentToRegionFragment(
                 countryId,
-                countryName
+                ""
             )
             findNavController().navigate(action)
         }
@@ -68,26 +67,19 @@ class PlaceSelectorFragment : Fragment() {
 
     private fun getData() {
         setFragmentResultListener(PLACE_SELECTOR_KEY) { _, bundle ->
-            if (bundle.containsKey(COUNTRY_ID_KEY) && bundle.containsKey(COUNTRY_NAME_KEY)) {
-                viewModel.onCountryFragmentResultEvent(
-                    countryId = bundle.getString(COUNTRY_ID_KEY, ""),
-                    countryName = bundle.getString(COUNTRY_NAME_KEY, "")
-                )
-            }
-            if (bundle.containsKey(AREA_ID_KEY) && bundle.containsKey(AREA_NAME_KEY)) {
-                viewModel.onAreaFragmentResultEvent(
-                    areaId = bundle.getString(AREA_ID_KEY, ""),
-                    areaName = bundle.getString(AREA_NAME_KEY, "")
-                )
-            }
+            viewModel.onFragmentResultEvent(
+                countryId = bundle.getString(COUNTRY_ID_KEY, ""),
+                countryName = bundle.getString(COUNTRY_NAME_KEY, ""),
+                areaId = bundle.getString(AREA_ID_KEY, ""),
+                areaName = bundle.getString(AREA_NAME_KEY, "")
+            )
         }
-        viewModel.initFilters()
     }
 
     private fun initUi() {
         changeIcon(binding.countryText, binding.countryIcon)
         changeIcon(binding.regionText, binding.regionIcon)
-        if (regionName.isEmpty() && countryName.isEmpty()) {
+        if (regionName.isEmpty()) {
             binding.selectButton.visibility = View.GONE
         } else {
             binding.selectButton.visibility = View.VISIBLE
@@ -107,6 +99,7 @@ class PlaceSelectorFragment : Fragment() {
                 view.setOnClickListener {
                     editText.setText("")
                     if (it.id == binding.countryIcon.id) {
+                        countryId = ""
                         viewModel.onBtnClearCountryClickEvent()
                     } else if (it.id == binding.regionIcon.id) {
                         viewModel.onBtnClearAreaClickEvent()
@@ -115,6 +108,11 @@ class PlaceSelectorFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {

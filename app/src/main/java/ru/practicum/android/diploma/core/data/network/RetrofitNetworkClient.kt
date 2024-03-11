@@ -3,6 +3,7 @@ package ru.practicum.android.diploma.core.data.network
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import ru.practicum.android.diploma.core.data.NetworkClient
 import ru.practicum.android.diploma.core.data.NetworkClient.Companion.EXCEPTION_ERROR_CODE
 import ru.practicum.android.diploma.core.data.NetworkClient.Companion.NETWORK_ERROR_CODE
@@ -72,7 +73,10 @@ class RetrofitNetworkClient(
             if (retrofitResponse.isSuccessful) {
                 retrofit2.Response.success(CountryResponse(retrofitResponse.body() ?: emptyList()))
             } else {
-                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
             }
         }
     }
@@ -83,7 +87,10 @@ class RetrofitNetworkClient(
             if (retrofitResponse.isSuccessful) {
                 retrofit2.Response.success(GetIndustriesResponse(retrofitResponse.body() ?: emptyList()))
             } else {
-                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
             }
         }
     }
@@ -94,7 +101,10 @@ class RetrofitNetworkClient(
             if (retrofitResponse.isSuccessful) {
                 retrofit2.Response.success(GetAreasResponse(retrofitResponse.body() ?: emptyList()))
             } else {
-                retrofit2.Response.error(retrofitResponse.code(), retrofitResponse.errorBody()!!)
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
             }
         }
     }
@@ -119,10 +129,10 @@ class RetrofitNetworkClient(
                 Response().apply { resultCode = retrofitResponse.code() }
             }
         } catch (e: SocketTimeoutException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
+            Log.e(RetrofitNetworkClient::class.java.simpleName, "executeRequestGetVacanciesByPage:", e)
             Response().apply { resultCode = NETWORK_ERROR_CODE }
         } catch (e: IOException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
+            Log.e(RetrofitNetworkClient::class.java.simpleName, "executeRequestGetVacanciesByPage:", e)
             Response().apply { resultCode = EXCEPTION_ERROR_CODE }
         }
     }

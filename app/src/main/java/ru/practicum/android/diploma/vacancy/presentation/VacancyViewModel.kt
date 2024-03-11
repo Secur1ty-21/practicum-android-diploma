@@ -40,8 +40,10 @@ class VacancyViewModel(
             detailVacancyUseCase.execute(id).collect {
                 when (it) {
                     is Resource.Success -> {
-                        vacancy = it.data!!
-                        checkInFavourites(vacancy!!)
+                        it.data?.let { data ->
+                            vacancy = data
+                            checkInFavourites(data)
+                        }
                     }
 
                     is Resource.InternetError -> renderState(VacancyScreenState.Error)
@@ -68,13 +70,13 @@ class VacancyViewModel(
     }
 
     fun setFavourites() {
-        if (vacancy != null) {
+        vacancy?.let {
             viewModelScope.launch {
                 if (isFavourite) {
-                    addToFavouritesInteractor.removeFromFavourites(vacancy!!)
+                    addToFavouritesInteractor.removeFromFavourites(it)
                     isFavourite = false
                 } else {
-                    addToFavouritesInteractor.addToFavourites(vacancy!!)
+                    addToFavouritesInteractor.addToFavourites(it)
                     isFavourite = true
                 }
             }

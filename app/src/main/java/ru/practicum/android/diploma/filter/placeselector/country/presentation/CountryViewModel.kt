@@ -34,7 +34,7 @@ class CountryViewModel(
             countryUseCase.execute().collect {
                 when (it) {
                     is Resource.Success -> {
-                        val countryList = it.data!!
+                        val countryList = it.data ?: emptyList()
                         val filteredCountries = countryList.filter { country ->
                             StringUtils.getCountryList(country.name)
                         }

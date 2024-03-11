@@ -37,6 +37,20 @@ class AreaRepositoryImpl(
         }
     }
 
+    override fun getAllArea(): Flow<Result<List<Area>, AreaError>> = flow {
+        val response = networkClient.getAreas()
+        when (response.resultCode) {
+            NetworkClient.SUCCESSFUL_CODE -> {
+                var data = (response as GetAreasResponse).areas
+                data = unCoverList(data)
+                emit(Result.Success(data.mapToDomain()))
+            }
+            else -> {
+                emit(Result.Error(AreaError.GetError))
+            }
+        }
+    }
+
     private fun getCountryRegions(data: List<AreasDto>, countryId: String): List<AreasDto> {
         for (area in data) {
             if (area.id == countryId) {
@@ -47,17 +61,16 @@ class AreaRepositoryImpl(
     }
 
     private fun unCoverList(data: List<AreasDto>): List<AreasDto> {
-        var newData = data
-        while (isExistNested(newData)) {
-            newData = newData.flatMap {
-                if (it.areas.isNullOrEmpty()) {
-                    listOf(it)
-                } else {
-                    it.areas
+        val newList = mutableListOf<AreasDto>().apply { addAll(data) }
+        while (isExistNested(newList)) {
+            for (i in newList.indices) {
+                if (!newList[i].areas.isNullOrEmpty()) {
+                    newList.addAll(newList[i].areas ?: emptyList())
+                    newList[i] = newList[i].copy(areas = emptyList())
                 }
             }
         }
-        return newData
+        return newList
     }
 
     private fun isExistNested(list: List<AreasDto>): Boolean {

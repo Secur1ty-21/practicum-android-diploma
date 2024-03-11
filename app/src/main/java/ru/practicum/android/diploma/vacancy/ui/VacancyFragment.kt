@@ -1,6 +1,7 @@
 package ru.practicum.android.diploma.vacancy.ui
 
 import android.Manifest
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -106,7 +107,7 @@ class VacancyFragment : Fragment() {
         binding.textViewDescriptionValue.text = detailVacancy.description
         setSalary(detailVacancy.salaryFrom, detailVacancy.salaryTo, detailVacancy.currency)
         setLogo(detailVacancy.employerLogoUrl)
-        setKeySkills(detailVacancy.keySkills)
+        setKeySkills(requireContext().resources)
         setLocation(detailVacancy.city, detailVacancy.area)
         setContactInfo(
             detailVacancy.contactName,
@@ -145,20 +146,13 @@ class VacancyFragment : Fragment() {
         )
     }
 
-    private fun setKeySkills(keySkills: List<String>) {
-        if (keySkills.isEmpty()) {
+    private fun setKeySkills(resources: Resources) {
+        val formattedKeySkills = viewModel.formatKeySkills(resources)
+        if (detailVacancy?.keySkills?.isEmpty() == true) {
             binding.textViewKeySkillsTitle.isVisible = false
             binding.textViewKeySkillsValue.isVisible = false
         } else {
-            var keySkillsText = ""
-            keySkills.forEach { keySkill ->
-                val line = requireContext().resources.getString(
-                    R.string.tv_detail_vacancy_keySkill,
-                    keySkill
-                )
-                keySkillsText += line
-            }
-            binding.textViewKeySkillsValue.text = keySkillsText
+            binding.textViewKeySkillsValue.text = formattedKeySkills
         }
     }
 

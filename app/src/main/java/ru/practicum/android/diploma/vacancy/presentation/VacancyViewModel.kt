@@ -1,11 +1,13 @@
 package ru.practicum.android.diploma.vacancy.presentation
 
+import android.content.res.Resources
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.core.domain.model.DetailVacancy
 import ru.practicum.android.diploma.favourites.domain.api.AddToFavouritesInteractor
 import ru.practicum.android.diploma.util.Resource
@@ -83,6 +85,19 @@ class VacancyViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             isFavourite = addToFavouritesInteractor.checkVacancyInFavourites(id)
             renderState(VacancyScreenState.Content(detailVacancy, isFavourite))
+        }
+    }
+
+    fun formatKeySkills(resources: Resources): String {
+        return if (vacancy?.keySkills?.isEmpty() == true) {
+            ""
+        } else {
+            val keySkillsText = StringBuilder()
+            vacancy?.keySkills?.forEachIndexed { _, keySkill ->
+                val formattedSkill = resources.getString(R.string.tv_detail_vacancy_keySkill, keySkill)
+                keySkillsText.append(formattedSkill)
+            }
+            keySkillsText.toString()
         }
     }
 }

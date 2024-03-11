@@ -29,6 +29,7 @@ class SearchFragment : Fragment() {
         transitionToDetailedVacancy(vacancy.id)
     }
     private var isLastPageReached = false
+    private var isWasPaginationError = false
     private var onScrollLister: RecyclerView.OnScrollListener? = null
     private var _binding: FragmentSearchBinding? = null
     private val binding get() = _binding!!
@@ -96,7 +97,7 @@ class SearchFragment : Fragment() {
                 val currentLastVisibleItem = (recyclerView.layoutManager as LinearLayoutManager)
                     .findLastVisibleItemPosition()
                 if (isTimeToGetNextPage(currentLastVisibleItem) && currentLastVisibleItem != lastVisibleItem) {
-                    if (isScrolledToLastItem(currentLastVisibleItem)) {
+                    if (isScrolledToLastItem(currentLastVisibleItem) && !isWasPaginationError) {
                         binding.paginationProgressBar.show()
                     } else {
                         binding.paginationProgressBar.visibility = View.GONE
@@ -161,6 +162,7 @@ class SearchFragment : Fragment() {
     private fun updateContent(vacancies: List<ShortVacancy>, error: SearchState?) {
         binding.paginationProgressBar.visibility = View.GONE
         if (vacancies.isNotEmpty()) {
+            isWasPaginationError = false
             isLastPageReached = vacancies.size < SearchVacancyUseCase.DEFAULT_VACANCIES_PER_PAGE
             vacancyAdapter.pagination(vacancies)
             binding.tvVacancyAmount.text =
@@ -171,8 +173,12 @@ class SearchFragment : Fragment() {
                 )
         }
         if (error is SearchState.NetworkError) {
+            isWasPaginationError = true
+            binding.paginationProgressBar.visibility = View.GONE
             showToast(getString(R.string.pagination_error_error_connection))
         } else if (error is SearchState.ServerError) {
+            isWasPaginationError = true
+            binding.paginationProgressBar.visibility = View.GONE
             showToast(getString(R.string.pagination_error_server_error))
         }
     }
@@ -233,6 +239,7 @@ class SearchFragment : Fragment() {
                 binding.placeholderText.visibility = View.VISIBLE
                 binding.errorPlaceholder.visibility = View.VISIBLE
                 binding.tvVacancyAmount.visibility = View.GONE
+                binding.paginationProgressBar.visibility = View.GONE
             }
 
             SearchStatus.SUCCESS -> {

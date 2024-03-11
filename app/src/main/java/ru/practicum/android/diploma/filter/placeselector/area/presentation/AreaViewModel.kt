@@ -44,23 +44,25 @@ class AreaViewModel(
                     }
                 }
             }
+        }.invokeOnCompletion { viewModelScope.launch { searchByText(searchText, countryId) } }
+    }
 
-            areaUseCase.execute(searchText, countryId).collect { result ->
-                if (result is Result.Success) {
-                    if (result.data.isEmpty()) {
-                        renderState(AreaScreenState.EmptyError)
-                    } else {
-                        areas.clear()
-                        areas.addAll(result.data)
-                        areas.sortBy { it.name }
-                        renderState(AreaScreenState.Content(areas))
-                    }
+    private suspend fun searchByText(searchText: String, countryId: String) {
+        areaUseCase.execute(searchText, countryId).collect { result ->
+            if (result is Result.Success) {
+                if (result.data.isEmpty()) {
+                    renderState(AreaScreenState.EmptyError)
                 } else {
-                    if ((result as Result.Error).errorType is AreaError.GetError) {
-                        renderState(AreaScreenState.GetError)
-                    } else {
-                        renderState(AreaScreenState.EmptyError)
-                    }
+                    areas.clear()
+                    areas.addAll(result.data)
+                    areas.sortBy { it.name }
+                    renderState(AreaScreenState.Content(areas))
+                }
+            } else {
+                if ((result as Result.Error).errorType is AreaError.GetError) {
+                    renderState(AreaScreenState.GetError)
+                } else {
+                    renderState(AreaScreenState.EmptyError)
                 }
             }
         }

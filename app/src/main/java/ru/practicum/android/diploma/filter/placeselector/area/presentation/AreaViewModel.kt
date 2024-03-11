@@ -6,9 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import ru.practicum.android.diploma.core.data.mapper.mapToDomain
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.Area
 import ru.practicum.android.diploma.filter.placeselector.area.domain.model.AreaError
@@ -16,7 +14,10 @@ import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.Get
 import ru.practicum.android.diploma.filter.placeselector.area.domain.usecase.GetAllAreaUseCase
 import ru.practicum.android.diploma.util.Result
 
-class AreaViewModel(private val areaUseCase: GetAreasByTextUseCase, private val countryUseCase: GetAllAreaUseCase) : ViewModel() {
+class AreaViewModel(
+    private val areaUseCase: GetAreasByTextUseCase,
+    private val countryUseCase: GetAllAreaUseCase
+) : ViewModel() {
     private val stateLiveData = MutableLiveData<AreaScreenState>()
     private var isClickAllowed = true
     private val areas: ArrayList<Area> = arrayListOf()

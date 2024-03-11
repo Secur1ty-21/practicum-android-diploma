@@ -87,6 +87,6 @@ val interactorModule = module {
         GetApplyFilterFlagUseCase(filterRepository = get())
     }
     factory {
-       GetAllAreaUseCase(areaRepository = get())
+        GetAllAreaUseCase(areaRepository = get())
     }
 }

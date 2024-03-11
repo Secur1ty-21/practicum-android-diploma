@@ -1,6 +1,5 @@
 package ru.practicum.android.diploma.filter.placeselector.area.data
 
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import ru.practicum.android.diploma.core.data.NetworkClient
@@ -51,7 +50,6 @@ class AreaRepositoryImpl(
             }
         }
     }
-
 
     private fun getCountryRegions(data: List<AreasDto>, countryId: String): List<AreasDto> {
         for (area in data) {

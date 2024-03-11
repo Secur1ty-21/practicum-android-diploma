@@ -28,15 +28,13 @@ class AreaViewModel(
 
     fun getAreas(searchText: String, countryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            areaUseCase.execute(searchText, countryId).collect { result ->
+            countryUseCase.execute().collect { result ->
                 if (result is Result.Success) {
                     if (result.data.isEmpty()) {
                         renderState(AreaScreenState.EmptyError)
                     } else {
-                        areas.clear()
-                        areas.addAll(result.data)
-                        areas.sortBy { it.name }
-                        renderState(AreaScreenState.Content(areas))
+                        allAreas.clear()
+                        allAreas.addAll(result.data)
                     }
                 } else {
                     if ((result as Result.Error).errorType is AreaError.GetError) {
@@ -47,13 +45,15 @@ class AreaViewModel(
                 }
             }
 
-            countryUseCase.execute().collect { result ->
+            areaUseCase.execute(searchText, countryId).collect { result ->
                 if (result is Result.Success) {
                     if (result.data.isEmpty()) {
                         renderState(AreaScreenState.EmptyError)
                     } else {
-                        allAreas.clear()
-                        allAreas.addAll(result.data)
+                        areas.clear()
+                        areas.addAll(result.data)
+                        areas.sortBy { it.name }
+                        renderState(AreaScreenState.Content(areas))
                     }
                 } else {
                     if ((result as Result.Error).errorType is AreaError.GetError) {

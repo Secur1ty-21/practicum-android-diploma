@@ -125,6 +125,7 @@ class SearchFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         onScrollLister?.let { binding.vacancyRecycler.removeOnScrollListener(it) }
+        _binding = null
     }
 
     private fun isTimeToGetNextPage(lastVisibleItem: Int): Boolean {

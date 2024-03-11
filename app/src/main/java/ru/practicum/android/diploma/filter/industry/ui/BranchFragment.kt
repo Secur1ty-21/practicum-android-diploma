@@ -62,11 +62,13 @@ class BranchFragment : Fragment() {
                 binding.placeholderText.text = getString(R.string.placeholder_cannot_get_list_of_regions)
                 showError()
             }
+
             is BranchScreenState.Content -> {
                 binding.errorPlaceholder.isVisible = false
                 binding.placeholderText.isVisible = false
                 showContent(branchScreenState)
             }
+
             is BranchScreenState.Empty -> {
                 binding.errorPlaceholder.setImageDrawable(
                     AppCompatResources.getDrawable(requireContext(), R.drawable.placeholder_nothing_found)
@@ -142,5 +144,10 @@ class BranchFragment : Fragment() {
             }
             true
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

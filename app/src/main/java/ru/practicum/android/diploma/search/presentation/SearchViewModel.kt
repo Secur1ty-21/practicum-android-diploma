@@ -194,6 +194,9 @@ class SearchViewModel(
 
     fun clearSearch() {
         stateLiveData.postValue(SearchState.Default)
+        previousSearchText = ""
+        previousSearchPage = -1
+        lastVacancyAmount = 0
     }
 
     fun isFilterApplied(): Boolean {

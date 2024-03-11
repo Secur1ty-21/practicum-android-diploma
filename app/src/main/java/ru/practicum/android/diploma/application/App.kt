@@ -10,8 +10,8 @@ class App : Application() {
 
         startKoin {
             androidContext(this@App)
-            modules(DiModuleProvider.coreModules)
-            modules(DiModuleProvider.industryModules)
+            modules(DiProvider.coreModules)
+            modules(DiProvider.industryModules)
         }
     }
 }

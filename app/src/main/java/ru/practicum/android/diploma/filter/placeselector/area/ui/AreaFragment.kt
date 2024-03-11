@@ -91,7 +91,7 @@ class AreaFragment : Fragment() {
         if (viewModel.clickDebounce()) {
             val country = viewModel.getCountryByRegion(area.parentId!!)
             countryId = country?.id!!
-            countryName = country?.name!!
+            countryName = country.name
             setFragmentResult(
                 requestKey = PlaceSelectorFragment.PLACE_SELECTOR_KEY,
                 result = bundleOf(
@@ -126,5 +126,10 @@ class AreaFragment : Fragment() {
             }
             true
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

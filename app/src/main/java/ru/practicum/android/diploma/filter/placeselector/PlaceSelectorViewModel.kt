@@ -19,7 +19,7 @@ class PlaceSelectorViewModel(
     private val _state = MutableLiveData(PlaceSelectorState())
     val state: LiveData<PlaceSelectorState> get() = _state
 
-    fun initFilters() {
+    init {
         setFilters()
     }
 

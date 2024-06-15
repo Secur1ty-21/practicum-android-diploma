@@ -1,11 +1,13 @@
 package ru.practicum.android.diploma.vacancy.presentation
 
+import android.content.res.Resources
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.core.domain.model.DetailVacancy
 import ru.practicum.android.diploma.favourites.domain.api.AddToFavouritesInteractor
 import ru.practicum.android.diploma.util.Resource
@@ -23,12 +25,11 @@ class VacancyViewModel(
     private val id: Long
 ) : ViewModel() {
     private val stateLiveData = MutableLiveData<VacancyScreenState>()
-    private var isInFavourites: Boolean = false
+    private var isFavourite: Boolean = false
     private var vacancy: DetailVacancy? = null
 
     init {
         getDetailVacancyById(id)
-        setFavouritesStatus()
     }
 
     fun observeState(): LiveData<VacancyScreenState> = stateLiveData
@@ -39,9 +40,10 @@ class VacancyViewModel(
             detailVacancyUseCase.execute(id).collect {
                 when (it) {
                     is Resource.Success -> {
-                        vacancy = it.data!!
-                        renderState(VacancyScreenState.Content(it.data))
-
+                        it.data?.let { data ->
+                            vacancy = data
+                            checkInFavourites(data)
+                        }
                     }
 
                     is Resource.InternetError -> renderState(VacancyScreenState.Error)
@@ -67,23 +69,37 @@ class VacancyViewModel(
         stateLiveData.postValue(vacancyScreenState)
     }
 
-    fun getFavouritesStatus(): Boolean {
-        return isInFavourites
-    }
-
-    private fun setFavouritesStatus() {
-        viewModelScope.launch {
-            isInFavourites = addToFavouritesInteractor.checkVacancyInFavourites(id)
+    fun setFavourites() {
+        vacancy?.let {
+            viewModelScope.launch {
+                if (isFavourite) {
+                    addToFavouritesInteractor.removeFromFavourites(it)
+                    isFavourite = false
+                } else {
+                    addToFavouritesInteractor.addToFavourites(it)
+                    isFavourite = true
+                }
+            }
         }
     }
 
-    fun setFavourites() {
-        viewModelScope.launch {
-            if (isInFavourites) {
-                addToFavouritesInteractor.removeFromFavourites(vacancy!!)
-            } else {
-                addToFavouritesInteractor.addToFavourites(vacancy!!)
+    private fun checkInFavourites(detailVacancy: DetailVacancy) {
+        viewModelScope.launch(Dispatchers.IO) {
+            isFavourite = addToFavouritesInteractor.checkVacancyInFavourites(id)
+            renderState(VacancyScreenState.Content(detailVacancy, isFavourite))
+        }
+    }
+
+    fun formatKeySkills(resources: Resources): String {
+        return if (vacancy?.keySkills?.isEmpty() == true) {
+            ""
+        } else {
+            val keySkillsText = StringBuilder()
+            vacancy?.keySkills?.forEachIndexed { _, keySkill ->
+                val formattedSkill = resources.getString(R.string.tv_detail_vacancy_keySkill, keySkill)
+                keySkillsText.append(formattedSkill)
             }
+            keySkillsText.toString()
         }
     }
 }

@@ -1,9 +1,12 @@
 package ru.practicum.android.diploma.vacancy.ui
 
+import android.Manifest
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -25,6 +28,7 @@ class VacancyFragment : Fragment() {
     private val viewModel by viewModel<VacancyViewModel> { parametersOf(id) }
     private var _binding: FragmentVacancyBinding? = null
     private val binding get() = _binding!!
+    private var detailVacancy: DetailVacancy? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         id = VacancyFragmentArgs.fromBundle(requireArguments()).vacancyId
         super.onCreate(savedInstanceState)
@@ -47,6 +51,15 @@ class VacancyFragment : Fragment() {
         binding.vacancyToolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) {
+                    viewModel.makeCall(detailVacancy!!.phone)
+                }
+            }
+        binding.textViewPhoneValue.setOnClickListener {
+            requestPermissionLauncher.launch(Manifest.permission.CALL_PHONE)
+        }
     }
 
     private fun render(vacancyScreenState: VacancyScreenState) {
@@ -54,7 +67,7 @@ class VacancyFragment : Fragment() {
             is VacancyScreenState.Loading -> showProgressBar()
             is VacancyScreenState.Error -> showError()
             is VacancyScreenState.Content -> {
-                setContent(vacancyScreenState.vacancy, viewModel.getFavouritesStatus())
+                setContent(vacancyScreenState.vacancy, vacancyScreenState.isFavourite)
                 showContent()
             }
         }
@@ -82,42 +95,32 @@ class VacancyFragment : Fragment() {
     }
 
     private fun setContent(detailVacancy: DetailVacancy, isInFavourites: Boolean) {
+        this.detailVacancy = detailVacancy
         binding.textViewVacancyValue.text = detailVacancy.name
         binding.textViewEmployerValue.text = detailVacancy.employerName
-        binding.textViewEmployerCityValue.text = detailVacancy.city
         binding.textViewRequiredExperienceValue.text = detailVacancy.experience
-        binding.textViewSchedule.text = detailVacancy.workSchedule
+        binding.textViewEmploymentAndSchedule.text = requireContext().resources.getString(
+            R.string.tv_schedule_and_employment,
+            detailVacancy.employment,
+            detailVacancy.workSchedule
+        )
         binding.textViewDescriptionValue.text = detailVacancy.description
         setSalary(detailVacancy.salaryFrom, detailVacancy.salaryTo, detailVacancy.currency)
         setLogo(detailVacancy.employerLogoUrl)
-        setKeySkills(detailVacancy.keySkills)
+        setKeySkills(requireContext().resources)
+        setLocation(detailVacancy.city, detailVacancy.area)
         setContactInfo(
             detailVacancy.contactName,
             detailVacancy.email,
             detailVacancy.phone,
             detailVacancy.contactComment
         )
-        if (isInFavourites) {
-            binding.imageViewFavorite.setImageDrawable(
-                ContextCompat.getDrawable(
-                    requireContext(),
-                    R.drawable.ic_favorites_add
-                )
-            )
-        } else {
-            binding.imageViewFavorite.setImageDrawable(
-                ContextCompat.getDrawable(
-                    requireContext(),
-                    R.drawable.ic_favorites_remove
-                )
-            )
-        }
+        setFavouriteImage(isInFavourites)
         binding.imageViewShareVacancy.setOnClickListener { viewModel.shareVacancy(detailVacancy.alternateUrl) }
         binding.imageViewFavorite.setOnClickListener {
             viewModel.setFavourites()
             setContent(detailVacancy, !isInFavourites)
         }
-        binding.textViewPhoneValue.setOnClickListener { viewModel.makeCall(detailVacancy.phone) }
         binding.textViewEmailValue.setOnClickListener { viewModel.sendEmail(detailVacancy.email) }
     }
 
@@ -143,20 +146,13 @@ class VacancyFragment : Fragment() {
         )
     }
 
-    private fun setKeySkills(keySkills: List<String>) {
-        if (keySkills.isEmpty()) {
+    private fun setKeySkills(resources: Resources) {
+        val formattedKeySkills = viewModel.formatKeySkills(resources)
+        if (detailVacancy?.keySkills?.isEmpty() == true) {
             binding.textViewKeySkillsTitle.isVisible = false
             binding.textViewKeySkillsValue.isVisible = false
         } else {
-            var keySkillsText = ""
-            keySkills.forEach { keySkill ->
-                val line = requireContext().resources.getString(
-                    R.string.tv_detail_vacancy_keySkill,
-                    keySkill
-                )
-                keySkillsText += line
-            }
-            binding.textViewKeySkillsValue.text = keySkillsText
+            binding.textViewKeySkillsValue.text = formattedKeySkills
         }
     }
 
@@ -188,5 +184,36 @@ class VacancyFragment : Fragment() {
         } else {
             binding.textViewCommentValue.text = contactComment
         }
+    }
+
+    private fun setLocation(city: String, area: String) {
+        if (city.isNotEmpty()) {
+            binding.textViewEmployerCityValue.text = city
+        } else {
+            binding.textViewEmployerCityValue.text = area
+        }
+    }
+
+    private fun setFavouriteImage(isInFavourites: Boolean) {
+        if (isInFavourites) {
+            binding.imageViewFavorite.setImageDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_favorites_add
+                )
+            )
+        } else {
+            binding.imageViewFavorite.setImageDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_favorites_remove
+                )
+            )
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

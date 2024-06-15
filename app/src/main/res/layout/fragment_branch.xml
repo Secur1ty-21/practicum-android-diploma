@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/yaJobRootContainerBackground"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/filterToolbarBranch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:contentInsetStartWithNavigation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="?attr/colorOnPrimary"
+        app:title="@string/bar_branch_of_work"
+        app:titleTextAppearance="@style/MaterialToolbarTextStyle" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/padding_16dp"
+        android:layout_marginTop="@dimen/padding_8dp">
+
+        <EditText
+            android:id="@+id/search"
+            style="@style/EditTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/edit_text_height_size"
+            android:background="@drawable/edit_text_background"
+            android:hint="@string/edit_text_hint_branch"
+            android:importantForAutofill="no"
+            android:paddingHorizontal="@dimen/search_margin_m" />
+
+        <ImageButton
+            android:id="@+id/btn_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginEnd="@dimen/padding_16dp"
+            android:background="@android:color/transparent"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_search" />
+    </FrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/branchRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/padding_16dp"
+        android:layout_weight="1"
+        tools:itemCount="20"
+        tools:listitem="@layout/industry_item" />
+
+    <ImageView
+        android:id="@+id/errorPlaceholder"
+        android:layout_width="328dp"
+        android:layout_height="223dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="143dp"
+        android:importantForAccessibility="no"
+        android:visibility="gone"
+        tools:src="@drawable/placeholder_region_response_error" />
+
+    <TextView
+        android:id="@+id/placeholderText"
+        style="@style/ErrorTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="top"
+        android:visibility="gone"
+        tools:text="@string/placeholder_no_such_region" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginHorizontal="@dimen/padding_16dp"
+        android:backgroundTint="@color/yp_blue"
+        android:fontFamily="@font/ys_display_medium"
+        android:letterSpacing="0"
+        android:text="@string/bt_select"
+        android:textAllCaps="false"
+        android:textColor="@color/yp_white"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:cornerRadius="12dp"
+        tools:visibility="visible" />
+</LinearLayout>

@@ -1,10 +1,12 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
     <style name="Base.Theme.PracticumAndroidDiploma" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/yp_black</item>
         <item name="colorOnPrimary">@color/yp_white</item>
         <item name="hintTextColor">@color/yp_white</item>
         <item name="colorPrimaryContainer">@color/yp_gray</item>
         <item name="android:statusBarColor">@color/yp_black</item>
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <!-- Custom attribute setup -->
         <item name="teamTextColor">@color/yp_white</item>
         <item name="bottomNavViewBackgroundColor">@color/yp_black</item>

@@ -3,7 +3,14 @@ package ru.practicum.android.diploma.core.data.network
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import ru.practicum.android.diploma.core.data.NetworkClient
+import ru.practicum.android.diploma.core.data.NetworkClient.Companion.EXCEPTION_ERROR_CODE
+import ru.practicum.android.diploma.core.data.NetworkClient.Companion.NETWORK_ERROR_CODE
+import ru.practicum.android.diploma.core.data.NetworkClient.Companion.SUCCESSFUL_CODE
+import ru.practicum.android.diploma.core.data.network.dto.CountryResponse
+import ru.practicum.android.diploma.core.data.network.dto.GetAreasResponse
+import ru.practicum.android.diploma.core.data.network.dto.GetIndustriesResponse
 import ru.practicum.android.diploma.core.data.network.dto.Response
 import ru.practicum.android.diploma.core.domain.model.SearchFilterParameters
 import java.io.IOException
@@ -20,12 +27,7 @@ class RetrofitNetworkClient(
         page: Int,
         perPage: Int
     ): Response {
-        if (!connectionChecker.isConnected()) {
-            return Response().apply { resultCode = NETWORK_ERROR_CODE }
-        }
-        return withContext(Dispatchers.IO) {
-            executeRequestGetVacanciesByPage(searchText, filterParameters, page, perPage, hhApi)
-        }
+        return executeRequestGetVacanciesByPage(searchText, filterParameters, page, perPage, hhApi)
     }
 
     private suspend fun executeRequestGetVacanciesByPage(
@@ -35,27 +37,13 @@ class RetrofitNetworkClient(
         perPage: Int,
         hhApi: HhApi
     ): Response {
-        return try {
-            val queryMap = mutableMapOf(
-                HhApiQuery.PAGE.value to page.toString(),
-                HhApiQuery.PER_PAGE.value to perPage.toString(),
-                HhApiQuery.SEARCH_TEXT.value to searchText
-            )
-            queryMap.putAll(getQueryFilterMap(filterParameters))
-            val response = hhApi.getVacancies(queryMap)
-            val body = response.body()
-            if (response.isSuccessful && body != null) {
-                body.apply { resultCode = SUCCESSFUL_CODE }
-            } else {
-                Response().apply { resultCode = response.code() }
-            }
-        } catch (e: SocketTimeoutException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
-            Response().apply { resultCode = NETWORK_ERROR_CODE }
-        } catch (e: IOException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
-            Response().apply { resultCode = EXCEPTION_ERROR_CODE }
-        }
+        val queryMap = mutableMapOf(
+            HhApiQuery.PAGE.value to page.toString(),
+            HhApiQuery.PER_PAGE.value to perPage.toString(),
+            HhApiQuery.SEARCH_TEXT.value to searchText
+        )
+        queryMap.putAll(getQueryFilterMap(filterParameters))
+        return runRequestOnIoThreads { hhApi.getVacancies(queryMap) }
     }
 
     private fun getQueryFilterMap(filterParameters: SearchFilterParameters): Map<String, String> {
@@ -76,35 +64,76 @@ class RetrofitNetworkClient(
     }
 
     override suspend fun getDetailVacancyById(id: Long): Response {
-        if (!connectionChecker.isConnected()) {
-            return Response().apply { resultCode = NETWORK_ERROR_CODE }
-        }
-        return withContext(Dispatchers.IO) {
-            executeRequestGetDetailVacancyById(id, hhApi)
+        return runRequestOnIoThreads { hhApi.getVacancy(id) }
+    }
+
+    override suspend fun getCountries(): Response {
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getCountries()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(CountryResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
+            }
         }
     }
 
-    private suspend fun executeRequestGetDetailVacancyById(id: Long, hhApi: HhApi): Response {
+    override suspend fun getIndustries(): Response {
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getIndustries()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(GetIndustriesResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
+            }
+        }
+    }
+
+    override suspend fun getAreas(): Response {
+        return runRequestOnIoThreads {
+            val retrofitResponse = hhApi.getAreas()
+            if (retrofitResponse.isSuccessful) {
+                retrofit2.Response.success(GetAreasResponse(retrofitResponse.body() ?: emptyList()))
+            } else {
+                retrofit2.Response.error(
+                    retrofitResponse.code(),
+                    retrofitResponse.errorBody() ?: ResponseBody.create(null, "")
+                )
+            }
+        }
+    }
+
+    private suspend fun <T : Response> runRequestOnIoThreads(request: suspend () -> retrofit2.Response<T>): Response {
+        return withContext(Dispatchers.IO) {
+            if (!connectionChecker.isConnected()) {
+                Response().apply { resultCode = NETWORK_ERROR_CODE }
+            } else {
+                getResponse { request() }
+            }
+        }
+    }
+
+    private suspend fun <T : Response> getResponse(request: suspend () -> retrofit2.Response<T>): Response {
         return try {
-            val response = hhApi.getVacancy(id)
-            val body = response.body()
-            if (response.isSuccessful && body != null) {
+            val retrofitResponse = request()
+            val body = retrofitResponse.body()
+            if (retrofitResponse.isSuccessful && body != null) {
                 body.apply { resultCode = SUCCESSFUL_CODE }
             } else {
-                Response().apply { resultCode = response.code() }
+                Response().apply { resultCode = retrofitResponse.code() }
             }
         } catch (e: SocketTimeoutException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
+            Log.e(RetrofitNetworkClient::class.java.simpleName, "executeRequestGetVacanciesByPage:", e)
             Response().apply { resultCode = NETWORK_ERROR_CODE }
         } catch (e: IOException) {
-            Log.e(RetrofitNetworkClient::class.java.simpleName, e.stackTraceToString())
+            Log.e(RetrofitNetworkClient::class.java.simpleName, "executeRequestGetVacanciesByPage:", e)
             Response().apply { resultCode = EXCEPTION_ERROR_CODE }
         }
-    }
-
-    companion object {
-        const val SUCCESSFUL_CODE = 200
-        const val EXCEPTION_ERROR_CODE = -2
-        const val NETWORK_ERROR_CODE = -1
     }
 }

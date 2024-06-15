@@ -11,16 +11,24 @@ import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.core.domain.model.SearchFilterParameters
 import ru.practicum.android.diploma.core.domain.model.SearchVacanciesResult
 import ru.practicum.android.diploma.favourites.presentation.CLICK_DEBOUNCE_DELAY
+import ru.practicum.android.diploma.filter.domain.models.FilterType
+import ru.practicum.android.diploma.filter.domain.usecase.GetApplyFilterFlagUseCase
+import ru.practicum.android.diploma.filter.domain.usecase.GetFiltersUseCase
 import ru.practicum.android.diploma.search.domain.usecase.SearchVacancyUseCase
 import ru.practicum.android.diploma.util.Resource
 
-class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : ViewModel() {
+class SearchViewModel(
+    private val searchVacancyUseCase: SearchVacancyUseCase,
+    private val getFiltersUseCase: GetFiltersUseCase,
+    private val getApplyFilterFlagUseCase: GetApplyFilterFlagUseCase
+) : ViewModel() {
     private var isClickAllowed = true
     private val stateLiveData = MutableLiveData<SearchState>(SearchState.Default)
     private var isSearchByPageAllowed = true
     private var searchByTextJob: Job? = null
     private var previousSearchText = ""
     private var previousSearchPage = -1
+    private var lastVacancyAmount = 0
 
     fun observeState(): LiveData<SearchState> = stateLiveData
 
@@ -40,14 +48,59 @@ class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : 
         return current
     }
 
-    fun searchByText(searchText: String, filterParameters: SearchFilterParameters) {
+    fun searchByButton(searchText: String) {
+        if (searchText.isNotEmpty()) {
+            searchByTextJob?.cancel()
+            viewModelScope.launch(Dispatchers.IO) {
+                renderState(SearchState.Loading)
+                searchVacancyUseCase.execute(searchText, 0, getFilterParameters()).collect {
+                    processSearchByTextResult(it)
+                }
+            }
+        }
+    }
+
+    private fun getFilterParameters(): SearchFilterParameters {
+        if (!getApplyFilterFlagUseCase.execute()) {
+            return SearchFilterParameters()
+        }
+        var parameters = SearchFilterParameters()
+        getFiltersUseCase.execute().forEach {
+            when (it) {
+                is FilterType.Country -> {
+                    if (parameters.regionId.isEmpty()) {
+                        parameters = parameters.copy(regionId = it.id)
+                    }
+                }
+
+                is FilterType.Region -> {
+                    parameters = parameters.copy(regionId = it.id)
+                }
+
+                is FilterType.Salary -> {
+                    parameters = parameters.copy(salary = it.amount)
+                }
+
+                is FilterType.Industry -> {
+                    parameters = parameters.copy(industriesId = it.id)
+                }
+
+                is FilterType.ShowWithSalaryFlag -> {
+                    parameters = parameters.copy(isOnlyWithSalary = it.flag)
+                }
+            }
+        }
+        return parameters
+    }
+
+    fun searchByText(searchText: String) {
         searchByTextJob?.cancel()
         if (searchText.isNotEmpty() && searchText != previousSearchText) {
             searchByTextJob = viewModelScope.launch(Dispatchers.IO) {
                 delay(SEARCH_DEBOUNCE_DELAY)
                 previousSearchText = searchText
                 renderState(SearchState.Loading)
-                searchVacancyUseCase.execute(searchText, 0, filterParameters).collect {
+                searchVacancyUseCase.execute(searchText, 0, getFilterParameters()).collect {
                     processSearchByTextResult(it)
                 }
             }
@@ -63,6 +116,7 @@ class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : 
                     stateLiveData.postValue(SearchState.EmptyResult)
                 } else {
                     clearSearch()
+                    lastVacancyAmount = result.data?.numOfResults ?: 0
                     stateLiveData.postValue(SearchState.Content(result.data))
                 }
             }
@@ -82,11 +136,11 @@ class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : 
         }
     }
 
-    fun searchByPage(searchText: String, page: Int, filterParameters: SearchFilterParameters) {
+    fun searchByPage(searchText: String, page: Int) {
         if (isSearchByPageAllowed(searchText, page)) {
             isSearchByPageAllowed = false
             viewModelScope.launch(Dispatchers.IO) {
-                searchVacancyUseCase.execute(searchText, page, filterParameters).collect {
+                searchVacancyUseCase.execute(searchText, page, getFilterParameters()).collect {
                     processSearchByPageResult(it, page)
                     delay(SEARCH_PAGINATION_DELAY)
                     isSearchByPageAllowed = true
@@ -98,20 +152,37 @@ class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : 
     private fun processSearchByPageResult(result: Resource<SearchVacanciesResult>, page: Int) {
         when (result) {
             is Resource.Success -> {
-                if (!result.data?.vacancies.isNullOrEmpty()) {
+                if (result.data != null && result.data.vacancies.isNotEmpty()) {
                     previousSearchPage = page
-                    stateLiveData.postValue(SearchState.Pagination(result.data?.vacancies ?: emptyList()))
+                    lastVacancyAmount = result.data.numOfResults
+                    stateLiveData.postValue(
+                        SearchState.Pagination(result.data)
+                    )
                 } else {
-                    stateLiveData.postValue(SearchState.Pagination(emptyList()))
+                    stateLiveData.postValue(
+                        SearchState.Pagination(
+                            SearchVacanciesResult(lastVacancyAmount, emptyList())
+                        )
+                    )
                 }
             }
 
             is Resource.ServerError -> {
-                stateLiveData.postValue(SearchState.Pagination(emptyList(), SearchState.ServerError))
+                stateLiveData.postValue(
+                    SearchState.Pagination(
+                        SearchVacanciesResult(lastVacancyAmount, emptyList()),
+                        SearchState.ServerError
+                    )
+                )
             }
 
             is Resource.InternetError -> {
-                stateLiveData.postValue(SearchState.Pagination(emptyList(), SearchState.NetworkError))
+                stateLiveData.postValue(
+                    SearchState.Pagination(
+                        SearchVacanciesResult(lastVacancyAmount, emptyList()),
+                        SearchState.NetworkError
+                    )
+                )
             }
         }
     }
@@ -123,6 +194,17 @@ class SearchViewModel(private val searchVacancyUseCase: SearchVacancyUseCase) : 
 
     fun clearSearch() {
         stateLiveData.postValue(SearchState.Default)
+        previousSearchText = ""
+        previousSearchPage = -1
+        lastVacancyAmount = 0
+    }
+
+    fun isFilterApplied(): Boolean {
+        val filterParameters = getFilterParameters()
+        return (filterParameters.regionId.isNotEmpty()
+            || filterParameters.industriesId.isNotEmpty()
+            || filterParameters.salary.isNotEmpty()
+            || filterParameters.isOnlyWithSalary)
     }
 
     companion object {
